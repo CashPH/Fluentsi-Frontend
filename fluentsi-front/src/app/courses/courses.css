@@ -1,0 +1,198 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.courses-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: sans-serif;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 3rem;
+    background-color: #f2f2f2;
+    height: 80px;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+}
+
+.logo {
+    height: 45px;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #000;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.nav-links a.active {
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 5px;
+    color: #1712a4;
+}
+
+.nav-mascot {
+    height: 120px;
+    margin-top: 40px;
+}
+
+.main-content {
+    flex: 1;
+    background-color: #1712a4;
+    background-image: url('/fluentsi-front/public/logo.png');
+    background-size: cover;
+    background-position: center;
+    padding: 2rem 3rem;
+}
+
+.search-bar-container {
+    margin-bottom: 2rem;
+}
+
+.search-input-wrapper {
+    background: #d1d5db;
+    border-radius: 25px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.6rem 1.2rem;
+    width: 350px;
+}
+
+.search-icon {
+    margin-right: 10px;
+}
+
+.search-input-wrapper input {
+    border: none;
+    background: transparent;
+    outline: none;
+    width: 100%;
+    font-size: 1rem;
+}
+
+.layout-grid {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.sidebar {
+    background-color: #d1d5db;
+    padding: 1.5rem;
+    border-radius: 12px;
+    width: 220px;
+    flex-shrink: 0;
+}
+
+.filter-group {
+    margin-bottom: 2rem;
+}
+
+.filter-group h3 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+}
+
+.filter-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.course-card {
+    background-color: #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-image-container {
+    position: relative;
+    height: 180px;
+}
+
+.course-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-badge {
+    position: absolute;
+    bottom: -20px;
+    right: 15px;
+    height: 55px;
+    width: 55px;
+    background-color: #000;
+    border-radius: 50%;
+    padding: 5px;
+    object-fit: contain;
+}
+
+.card-body {
+    padding: 1.8rem 1.5rem 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.level-badge {
+    background-color: #4ade80;
+    color: #000;
+    font-weight: bold;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.8rem;
+    border-radius: 15px;
+    align-self: flex-start;
+}
+
+.card-body h4 {
+    font-size: 1.2rem;
+    margin: 0.5rem 0;
+}
+
+.course-stats {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 1rem;
+}
+
+.start-link {
+    color: #1712a4;
+    font-weight: bold;
+    text-decoration: underline;
+    font-size: 0.95rem;
+}

@@ -1,0 +1,58 @@
+<div class="courses-container">
+    <nav class="navbar">
+        <div class="nav-left">
+            <img src="/fluentsi-front/public/logo.png" alt="Logo" class="logo">
+            <ul class="nav-links">
+                <li><a href="#">Inicio</a></li>
+                <li><a href="#" class="active">Cursos</a></li>
+            </ul>
+        </div>
+        <img src="/fluentsi-front/public/monito.png" alt="Mascot" class="nav-mascot">
+    </nav>
+
+    <main class="main-content">
+        <div class="search-bar-container">
+            <div class="search-input-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Busca un curso">
+            </div>
+        </div>
+
+        <div class="layout-grid">
+            <aside class="sidebar">
+                <div class="filter-group">
+                    <h3>Nivel</h3>
+                    <label *ngFor="let nivel of niveles">
+                        <input type="checkbox"> {{ nivel }}
+                    </label>
+                </div>
+
+                <div class="filter-group">
+                    <h3>Etiqueta</h3>
+                    <label *ngFor="let etiqueta of etiquetas">
+                        <input type="checkbox"> {{ etiqueta }}
+                    </label>
+                </div>
+            </aside>
+
+            <section class="courses-grid">
+                <div class="course-card" *ngFor="let curso of cursos">
+                    <div class="card-image-container">
+                        <img [src]="curso.img" alt="Course Image" class="course-img">
+                        <img src="/fluentsi-front/public/logo.png" alt="Badge" class="card-badge">
+                    </div>
+                    <div class="card-body">
+                        <span class="level-badge">{{ curso.nivel }}</span>
+                        <h4>{{ curso.titulo }}</h4>
+                        <div class="course-stats">
+                            <span>📄 2</span>
+                            <span>🕒 3h</span>
+                            <span>👤 1</span>
+                        </div>
+                        <a href="#" class="start-link">Start Learning</a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
