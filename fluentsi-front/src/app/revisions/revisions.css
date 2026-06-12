@@ -1,0 +1,161 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.revisions-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: sans-serif;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 3rem;
+    background-color: #f2f2f2;
+    height: 80px;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+}
+
+.logo {
+    height: 45px;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #000;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.nav-links a.active {
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 5px;
+    color: #1712a4;
+}
+
+.nav-mascot {
+    height: 120px;
+    margin-top: 40px;
+}
+
+.main-content {
+    flex: 1;
+    background-color: #1712a4;
+    background-image: url('/fluentsi-front/public/fondo-manos.png');
+    background-size: cover;
+    background-position: center;
+    padding: 3rem;
+}
+
+.panel-container {
+    background-color: #a7a6e6;
+    border-radius: 15px;
+    padding: 2rem;
+    width: 60%;
+    min-width: 550px;
+}
+
+.search-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 2rem;
+}
+
+.search-input-wrapper {
+    background: #d1d5db;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    width: 250px;
+}
+
+.search-input-wrapper input {
+    border: none;
+    background: transparent;
+    outline: none;
+    width: 100%;
+    margin-left: 0.5rem;
+}
+
+.revisions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.revision-card {
+    background-color: #ffffff;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    padding: 0.6rem;
+    gap: 1.5rem;
+}
+
+.student-img {
+    width: 85px;
+    height: 85px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.card-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.card-info h4 {
+    font-size: 1.1rem;
+    color: #000;
+    margin: 0;
+}
+
+.card-info h4 span {
+    font-weight: 400;
+    color: #333;
+}
+
+.level-badge {
+    background-color: #4ade80;
+    color: #000;
+    font-weight: bold;
+    font-size: 0.8rem;
+    padding: 0.3rem 1.2rem;
+    border-radius: 15px;
+    align-self: flex-start;
+}
+
+.check-btn {
+    background-color: #fdf04b;
+    border: 1px solid #000;
+    padding: 0.6rem 1.2rem;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-right: 1rem;
+    transition: transform 0.1s;
+}
+
+.check-btn:hover {
+    transform: scale(1.05);
+}

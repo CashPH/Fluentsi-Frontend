@@ -1,0 +1,38 @@
+<div class="revisions-container">
+    <nav class="navbar">
+        <div class="nav-left">
+            <img src="assets/logo.png" alt="Logo" class="logo" />
+            <ul class="nav-links">
+                <li><a href="#">Inicio</a></li>
+                <li><a href="#">Mi agenda</a></li>
+                <li><a href="#">Cursos</a></li>
+                <li><a href="#" class="active">Revisiones</a></li>
+            </ul>
+        </div>
+        <img src="assets/monito.png" alt="Mascot" class="nav-mascot" />
+    </nav>
+
+    <main class="main-content">
+        <div class="panel-container">
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" placeholder="Busca" />
+                </div>
+            </div>
+
+            <div class="revisions-list">
+                <div class="revision-card" *ngFor="let rev of revisiones">
+                    <img [src]="rev.img" alt="Alumna" class="student-img" />
+                    <div class="card-info">
+                        <h4>
+                            {{ rev.nombre }} - <span>{{ rev.tipo }}</span>
+                        </h4>
+                        <span class="level-badge">{{ rev.nivel }}</span>
+                    </div>
+                    <button class="check-btn">Check Answers</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>

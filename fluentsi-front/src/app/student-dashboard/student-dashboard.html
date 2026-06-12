@@ -1,0 +1,85 @@
+<div class="student-container">
+    <nav class="navbar">
+        <div class="nav-left">
+            <img src="assets/logo.png" alt="Logo" class="logo">
+            <ul class="nav-links">
+                <li><a href="#" class="active">Inicio</a></li>
+                <li><a href="#">Cursos</a></li>
+            </ul>
+        </div>
+        <div class="nav-right">
+            <button class="logout-btn">Log out 🚪</button>
+            <img src="assets/monito.png" alt="Mascot" class="nav-mascot">
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <h1 class="welcome-title">Bienvenido &lt;Nombre alumno&gt;!</h1>
+
+        <div class="dashboard-grid">
+
+            <section class="learning-section">
+                <h2 class="section-title">Mi Aprendizaje</h2>
+                <div class="stats-row">
+                    <div class="stat-card gray">
+                        <span class="icon">📖</span>
+                        <div>
+                            <p class="stat-num">3</p>
+                            <p class="stat-label">Total de cursos</p>
+                        </div>
+                    </div>
+                    <div class="stat-card yellow">
+                        <span class="icon">📊</span>
+                        <div>
+                            <p class="stat-num">45%</p>
+                            <p class="stat-label">Completo</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="my-courses-list">
+                    <h2 class="section-title">Tus cursos</h2>
+                    <div class="course-progress-card" *ngFor="let c of cursosActivos">
+                        <div class="course-info">
+                            <h3>{{ c.titulo }}</h3>
+                            <div class="course-meta">
+                                <span>📄 2</span>
+                                <span>🕒 3h</span>
+                                <span>👤 1</span>
+                                <span class="lvl">{{ c.nivel }}</span>
+                            </div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill" [style.width.%]="c.progreso"></div>
+                            </div>
+                            <span class="prog-text">{{ c.progreso }}%</span>
+                        </div>
+                        <a href="#" class="continue-link">Continue Learning</a>
+                    </div>
+                </div>
+            </section>
+
+            <aside class="available-section">
+                <h2 class="section-title">Más cursos disponibles</h2>
+                <div class="available-grid">
+                    <div class="course-card-mini" *ngFor="let d of cursosDisponibles">
+                        <div class="img-wrapper">
+                            <img [src]="d.img" alt="Course">
+                            <img src="assets/logo.png" class="badge">
+                        </div>
+                        <div class="mini-body">
+                            <h4>{{ d.titulo }}</h4>
+                            <span class="lvl-tag">{{ d.nivel }}</span>
+                            <div class="mini-stats">
+                                <span>📄 2</span> <span>🕒 3h</span> <span>👤 1</span>
+                            </div>
+                            <a href="#" class="start-link">Start Learning</a>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+    </main>
+</div>

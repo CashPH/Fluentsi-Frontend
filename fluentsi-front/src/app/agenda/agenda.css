@@ -1,0 +1,195 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.agenda-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: sans-serif;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 3rem;
+    background-color: #f2f2f2;
+    height: 80px;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+}
+
+.logo {
+    height: 45px;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #000;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.nav-links a.active {
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 5px;
+    color: #1712a4;
+}
+
+.nav-mascot {
+    height: 120px;
+    margin-top: 40px;
+}
+
+.main-content {
+    flex: 1;
+    background-color: #1712a4;
+    background-image: url('../../assets/fondo-manos.png');
+    background-size: cover;
+    background-position: center;
+    padding: 2rem 4rem;
+}
+
+.agenda-layout {
+    display: flex;
+    gap: 3rem;
+}
+
+.day-selector {
+    background-color: #d1d5db;
+    padding: 1.5rem;
+    border-radius: 20px;
+    width: 280px;
+    text-align: center;
+}
+
+.day-selector h3 {
+    color: #1712a4;
+    margin-bottom: 1.5rem;
+    font-size: 1.4rem;
+}
+
+.days-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.day-selector button {
+    padding: 1rem;
+    border-radius: 15px;
+    border: none;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    color: #000;
+    background-color: #ffffff;
+}
+
+.day-selector button.active {
+    background-color: #1712a4;
+    color: #ffffff;
+}
+
+.timeline-container {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding-left: 2rem;
+}
+
+.timeline-line {
+    position: absolute;
+    left: 40px;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: #ffffff;
+    border-radius: 2px;
+}
+
+.timeline-slot {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+    position: relative;
+}
+
+.time-label {
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: bold;
+    width: 80px;
+    z-index: 1;
+}
+
+.class-card {
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex: 1;
+    border: 3px solid #000;
+}
+
+.student-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 15px;
+    object-fit: cover;
+}
+
+.card-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    color: #000;
+}
+
+.info-top h4 {
+    font-size: 1.4rem;
+    margin-bottom: 0.2rem;
+}
+
+.info-top p {
+    font-size: 1rem;
+    color: #444;
+    font-weight: 500;
+}
+
+.level-badge {
+    background-color: #4ade80;
+    color: #000;
+    font-weight: bold;
+    padding: 0.3rem 1.2rem;
+    border-radius: 15px;
+    align-self: flex-start;
+}
+
+.start-btn {
+    background-color: #fdf04b;
+    border: 1px solid #000;
+    padding: 0.8rem 1.5rem;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+}

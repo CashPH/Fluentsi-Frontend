@@ -1,0 +1,49 @@
+<div class="agenda-container">
+    <nav class="navbar">
+        <div class="nav-left">
+            <img src="assets/logo.png" alt="Logo" class="logo">
+            <ul class="nav-links">
+                <li><a href="#">Inicio</a></li>
+                <li><a href="#" class="active">Mi agenda</a></li>
+                <li><a href="#">Cursos</a></li>
+                <li><a href="#">Revisiones</a></li>
+            </ul>
+        </div>
+        <img src="assets/monito.png" alt="Mascot" class="nav-mascot">
+    </nav>
+
+    <main class="main-content">
+        <div class="agenda-layout">
+
+            <aside class="day-selector">
+                <h3>Selector de Días</h3>
+                <div class="days-list">
+                    <button *ngFor="let dia of dias" [class.active]="dia.activo">
+                        {{ dia.nombre }}
+                    </button>
+                </div>
+            </aside>
+
+            <section class="timeline-container">
+                <div class="timeline-line"></div>
+
+                <div class="timeline-slot" *ngFor="let clase of clases">
+                    <div class="time-label">{{ clase.hora }}</div>
+
+                    <div class="class-card">
+                        <img [src]="clase.img" alt="Student" class="student-img">
+                        <div class="card-info">
+                            <div class="info-top">
+                                <h4>{{ clase.alumna }}</h4>
+                                <p>Objetivo: {{ clase.objetivo }}</p>
+                            </div>
+                            <span class="level-badge">{{ clase.nivel }}</span>
+                        </div>
+                        <button class="start-btn">Iniciar Sesión</button>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
