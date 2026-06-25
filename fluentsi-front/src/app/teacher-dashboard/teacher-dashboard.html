@@ -3,13 +3,16 @@
         <div class="nav-left">
             <img src="assets/logo.png" alt="Logo" class="logo" />
             <ul class="nav-links">
-                <li><a href="#" class="active">Inicio</a></li>
-                <li><a href="#">Mi agenda</a></li>
-                <li><a href="#">Cursos</a></li>
-                <li><a href="#">Revisiones</a></li>
+                <li><a href="javascript:void(0)" class="active">Inicio</a></li>
+                <li><a href="javascript:void(0)">Mi agenda</a></li>
+                <li><a href="javascript:void(0)">Cursos</a></li>
+                <li><a href="javascript:void(0)">Revisiones</a></li>
             </ul>
         </div>
-        <img src="assets/monito.png" alt="Mascot" class="nav-mascot" />
+        <div class="nav-right">
+            <button class="logout-btn" (click)="logout()">Log out 🚪</button>
+            <img src="assets/monito.png" alt="Mascot" class="nav-mascot" />
+        </div>
     </nav>
 
     <main class="main-content">

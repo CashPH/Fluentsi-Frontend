@@ -1,0 +1,93 @@
+<div class="register-container">
+<nav class="navbar">
+    <div class="nav-left">
+    <img src="/logo.png" alt="Fluent Si Logo" class="logo">
+    <ul class="nav-links">
+        <li><a href="#">Inicio</a></li>
+    <li><a href="#">Cursos</a></li>
+    </ul>
+    </div>
+    <button class="nav-login-btn" (click)="goToLogin()">Log in</button>
+</nav>
+
+<main class="main-content">
+    <div class="register-card">
+    <div class="card-header">
+        <h2>Crear Cuenta</h2>
+    </div>
+    
+    <p class="subtitle">Completa el formulario para registrarte</p>
+
+    <img src="/monito.png" alt="Mascot" class="mascot">
+
+    <div *ngIf="success" class="success-message">
+        ¡Registro exitoso! Bienvenido a Fluentsi. Redirigiendo...
+    </div>
+
+    <div *ngIf="error" class="error-message">
+        {{ error }}
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+        <div class="input-group">
+        <label for="nombre">Nombre</label>
+        <input type="text" id="nombre" formControlName="nombre" placeholder="Tu nombre"
+            [class.error]="registerForm.get('nombre')?.invalid && registerForm.get('nombre')?.touched">
+        <span *ngIf="registerForm.get('nombre')?.invalid && registerForm.get('nombre')?.touched" class="error-text">
+            El nombre es requerido
+        </span>
+        </div>
+
+        <div class="input-group">
+        <label for="ap_paterno">Apellido Paterno</label>
+        <input type="text" id="ap_paterno" formControlName="ap_paterno" placeholder="Apellido paterno"
+            [class.error]="registerForm.get('ap_paterno')?.invalid && registerForm.get('ap_paterno')?.touched">
+        <span *ngIf="registerForm.get('ap_paterno')?.invalid && registerForm.get('ap_paterno')?.touched" class="error-text">
+            El apellido paterno es requerido
+        </span>
+        </div>
+
+        <div class="input-group">
+        <label for="ap_materno">Apellido Materno (opcional)</label>
+        <input type="text" id="ap_materno" formControlName="ap_materno" placeholder="Apellido materno">
+        </div>
+
+        <div class="input-group">
+        <label for="correo">Correo electrónico</label>
+        <input type="email" id="correo" formControlName="correo" placeholder="tu@correo.com"
+            [class.error]="registerForm.get('correo')?.invalid && registerForm.get('correo')?.touched">
+        <span *ngIf="registerForm.get('correo')?.invalid && registerForm.get('correo')?.touched" class="error-text">
+            Ingresa un correo válido
+        </span>
+        </div>
+
+        <div class="input-group">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" formControlName="password" placeholder="Mínimo 6 caracteres"
+            [class.error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+        <span *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" class="error-text">
+            La contraseña debe tener al menos 6 caracteres
+        </span>
+        </div>
+
+        <div class="input-group">
+        <label for="confirmPassword">Confirmar Contraseña</label>
+        <input type="password" id="confirmPassword" formControlName="confirmPassword" placeholder="Confirma tu contraseña"
+            [class.error]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched">
+        <span *ngIf="registerForm.hasError('passwordMismatch') && registerForm.touched" class="error-text">
+            Las contraseñas no coinciden
+        </span>
+        <span *ngIf="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched && !registerForm.hasError('passwordMismatch')" class="error-text">
+            Confirma tu contraseña
+        </span>
+        </div>
+
+        <p class="login-text">¿Ya tienes cuenta? <a href="javascript:void(0)" (click)="goToLogin()">Inicia sesión aquí</a></p>
+
+        <button type="submit" class="submit-btn" [disabled]="loading || registerForm.invalid">
+            {{ loading ? 'Registrando...' : 'Registrarse' }}
+        </button>
+    </form>
+    </div>
+</main>
+</div>

@@ -1,7 +1,7 @@
 <div class="login-container">
 <nav class="navbar">
     <div class="nav-left">
-    <img src="/fluentsi-front/public/logo.png" alt="Fluent Si Logo" class="logo">
+    <img src="/logo.png" alt="Fluent Si Logo" class="logo">
     <ul class="nav-links">
         <li><a href="#">Inicio</a></li>
     <li><a href="#">Cursos</a></li>
@@ -18,22 +18,36 @@
     
     <p class="subtitle">Ingresa tus datos para iniciar sesión</p>
 
-    <img src="/fluentsi-front/public/monito.png" alt="Mascot" class="mascot">
+    <img src="/monito.png" alt="Mascot" class="mascot">
 
-    <form>
+    <div *ngIf="error" class="error-message">
+        {{ error }}
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <div class="input-group">
-        <label for="username">Correo electrónico o Usuario</label>
-        <input type="text" id="username" name="username">
+        <label for="correo">Correo electrónico</label>
+        <input type="email" id="correo" formControlName="correo" placeholder="tu@correo.com"
+            [class.error]="loginForm.get('correo')?.invalid && loginForm.get('correo')?.touched">
+        <span *ngIf="loginForm.get('correo')?.invalid && loginForm.get('correo')?.touched" class="error-text">
+            Ingresa un correo válido
+        </span>
         </div>
 
         <div class="input-group">
         <label for="password">Contraseña</label>
-        <input type="password" id="password" name="password">
+        <input type="password" id="password" formControlName="password" placeholder="Mínimo 6 caracteres"
+            [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+        <span *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="error-text">
+            La contraseña es requerida
+        </span>
         </div>
 
-        <p class="register-text">¿No tienes cuenta? <a href="#">Regístrate aquí</a></p>
+        <p class="register-text">¿No tienes cuenta? <a href="javascript:void(0)" (click)="goToRegister()">Regístrate aquí</a></p>
 
-        <button type="submit" class="submit-btn">Entrar</button>
+        <button type="submit" class="submit-btn" [disabled]="loading || loginForm.invalid">
+            {{ loading ? 'Entrando...' : 'Entrar' }}
+        </button>
     </form>
     </div>
 </main>

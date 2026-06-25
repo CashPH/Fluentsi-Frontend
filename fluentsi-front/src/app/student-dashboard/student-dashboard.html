@@ -1,15 +1,15 @@
 <div class="student-container">
     <nav class="navbar">
         <div class="nav-left">
-            <img src="assets/logo.png" alt="Logo" class="logo">
+            <img src="../assets/logo.png" alt="Logo" class="logo">
             <ul class="nav-links">
-                <li><a href="#" class="active">Inicio</a></li>
-                <li><a href="#">Cursos</a></li>
+                <li><a href="javascript:void(0)" class="active">Inicio</a></li>
+                <li><a href="javascript:void(0)" (click)="goToCursos()">Cursos</a></li>
             </ul>
         </div>
         <div class="nav-right">
-            <button class="logout-btn">Log out 🚪</button>
-            <img src="assets/monito.png" alt="Mascot" class="nav-mascot">
+            <button class="logout-btn" (click)="logout()">Log out 🚪</button>
+            <img src="../assets/monito.png" alt="Mascot" class="nav-mascot">
         </div>
     </nav>
 
@@ -55,7 +55,7 @@
                             </div>
                             <span class="prog-text">{{ c.progreso }}%</span>
                         </div>
-                        <a href="#" class="continue-link">Continue Learning</a>
+                        <a href="javascript:void(0)" class="continue-link" (click)="goToCursos()">Continue Learning</a>
                     </div>
                 </div>
             </section>
@@ -74,7 +74,7 @@
                             <div class="mini-stats">
                                 <span>📄 2</span> <span>🕒 3h</span> <span>👤 1</span>
                             </div>
-                            <a href="#" class="start-link">Start Learning</a>
+                            <a href="javascript:void(0)" class="start-link" (click)="goToCursos()">Start Learning</a>
                         </div>
                     </div>
                 </div>

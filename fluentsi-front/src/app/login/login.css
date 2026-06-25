@@ -55,7 +55,7 @@
 .main-content {
     flex: 1;
     background-color: #1712a4;
-    background-image: url('/fluentsi-front/public/fondomanos.png');
+    background-image: url('/fondo-manos.png');
     background-size: cover;
     background-position: center;
     display: flex;
@@ -145,5 +145,31 @@ form {
     cursor: pointer;
     width: 40%;
     margin: 0 auto;
+    display: block;
+}
+
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.error-message {
+    background-color: #ff6b6b;
+    color: white;
+    padding: 0.8rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+.input-group input.error {
+    border: 2px solid #ff6b6b;
+}
+
+.error-text {
+    color: #ff6b6b;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
     display: block;
 }

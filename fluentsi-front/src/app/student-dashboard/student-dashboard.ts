@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-student-dashboard',
@@ -18,4 +20,15 @@ export class StudentDashboardComponent {
   cursosDisponibles = [
     { titulo: 'Nouns Level 1', nivel: 'A1', img: 'assets/curso1.jpg' }
   ];
+
+  constructor(private authService: AuthService, private router: Router) {}
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  goToCursos(): void {
+    this.router.navigate(['/cursos']);
+  }
 }

@@ -1,0 +1,187 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.register-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: sans-serif;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 3rem;
+    background-color: #f8f9fa;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+}
+
+.logo {
+    height: 45px;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #000;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.nav-login-btn {
+    background-color: #fdf04b;
+    border: 1px solid #000;
+    padding: 0.5rem 2rem;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.main-content {
+    flex: 1;
+    background-color: #1712a4;
+    background-image: url('/fondo-manos.png');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.register-card {
+    background-color: #9396db;
+    border-radius: 15px;
+    padding: 2rem 3rem;
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+    color: #ffffff;
+}
+
+.card-header {
+    background-color: #1712a4;
+    margin: -2rem -3rem 1rem -3rem;
+    padding: 1rem;
+    border-radius: 15px 15px 0 0;
+}
+
+.card-header h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    color: #4a4a4a;
+}
+
+.mascot {
+    height: 100px;
+    margin-bottom: 1.5rem;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.input-group {
+    margin-bottom: 1rem;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 0.7rem;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    font-size: 0.95rem;
+}
+
+.input-group input.error {
+    border: 2px solid #ff6b6b;
+}
+
+.error-text {
+    color: #ff6b6b;
+    font-size: 0.8rem;
+    margin-top: 0.2rem;
+    display: block;
+}
+
+.login-text {
+    text-align: center;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+    color: #6062b1;
+}
+
+.login-text a {
+    color: #1712a4;
+    text-decoration: underline;
+}
+
+.submit-btn {
+    background-color: #fdf04b;
+    border: 1px solid #000;
+    color: #000;
+    padding: 0.6rem;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    width: 40%;
+    margin: 1rem auto 0;
+    display: block;
+}
+
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.error-message {
+    background-color: #ff6b6b;
+    color: white;
+    padding: 0.8rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+.success-message {
+    background-color: #51cf66;
+    color: white;
+    padding: 0.8rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    text-align: center;
+}
