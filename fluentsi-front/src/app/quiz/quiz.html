@@ -1,0 +1,58 @@
+<div class="quiz-container">
+    <nav class="navbar">
+        <div class="nav-left">
+            <img src="assets/logo.png" alt="Logo" class="logo">
+            <ul class="nav-links">
+                <li><a href="#">Inicio</a></li>
+                <li><a href="#">Cursos</a></li>
+                <li><a href="#">Calificaciones</a></li>
+                <li><a href="#">Pagos</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="quiz-card">
+            <div class="quiz-body">
+
+                <div class="left-side">
+                    <h2>Question 3</h2>
+                    <h3 class="question-text">Which sentence is correct?</h3>
+
+                    <div class="options-container">
+                        <div class="option-row" *ngFor="let opcion of opciones">
+                            <div class="custom-checkbox" [class.checked]="opcion.seleccionada"></div>
+                            <span class="option-text">{{ opcion.texto }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right-side">
+                    <h3 class="grid-title">Questions</h3>
+                    <div class="question-grid">
+                        <div class="grid-item" *ngFor="let num of preguntasGrid"
+                            [class.active]="num === preguntaActual">
+                            {{ num }}
+                        </div>
+                    </div>
+
+                    <div class="help-box">
+                        <img src="assets/monito.png" alt="Mascot" class="help-mascot">
+                        <div class="help-content">
+                            <h4>Do you need help?</h4>
+                            <p>I - am</p>
+                            <p>She/He - is</p>
+                            <p>We/They/you - are</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="quiz-footer">
+                <button class="nav-btn return-btn">← Return</button>
+                <button class="nav-btn next-btn">Next →</button>
+            </div>
+        </div>
+    </main>
+</div>

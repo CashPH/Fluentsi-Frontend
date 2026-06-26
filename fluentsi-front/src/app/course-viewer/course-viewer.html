@@ -1,0 +1,62 @@
+<div class="course-viewer-container">
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>Course Content</h2>
+        </div>
+
+        <div class="module-section">
+            <div class="module-header">
+                <h3 class="module-title">Tag Questions</h3>
+                <span class="module-progress">0/2 <span class="chevron">^</span></span>
+            </div>
+
+            <ul class="lesson-list">
+                <li *ngFor="let item of lecciones" [class.active]="item.activa">
+                    <span class="icon">{{ item.tipo === 'leccion' ? '📄' : '❓' }}</span>
+                    <span class="lesson-title">{{ item.titulo }}</span>
+                    <div class="status-circle"></div>
+                </li>
+            </ul>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="icon-btn">‹</button>
+                <h1>TAG QUESTIONS</h1>
+            </div>
+            <button class="icon-btn">✕</button>
+        </header>
+
+        <div class="lesson-body">
+            <h2>About Lesson</h2>
+            <p>A <strong>tag question</strong> is a small question that we add to the end of a statement. Instead of
+                asking a full question, we use them to confirm information or to see if the other person agrees with us.
+            </p>
+
+            <h3>1. The Golden Rule of Polarity</h3>
+            <p>The most important rule to remember is that the tag is always the <strong>opposite</strong> of the
+                statement:</p>
+
+            <ul class="content-list">
+                <li>
+                    <strong>Positive Statement (+) → Negative Tag (-)</strong>
+                    <p class="example"><em>Example: You <strong>are</strong> a student, <strong>aren't</strong>
+                            you?</em></p>
+                </li>
+                <li>
+                    <strong>Negative Statement (-) → Positive Tag (+)</strong>
+                    <p class="example"><em>Example: You <strong>aren't</strong> a doctor, <strong>are</strong> you?</em>
+                    </p>
+                </li>
+            </ul>
+
+            <h3>2. Finding the Right Auxiliary Verb</h3>
+            <p>The tag question must use the same tense and the same auxiliary verb as the main sentence. If there is no
+                auxiliary verb (like in Present or Past Simple), we use <strong>do / does / did</strong>.</p>
+        </div>
+    </main>
+
+</div>

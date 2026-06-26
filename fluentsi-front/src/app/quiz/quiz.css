@@ -1,0 +1,191 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.quiz-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: sans-serif;
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    padding: 0 3rem;
+    background-color: #f2f2f2;
+    height: 80px;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+}
+
+.logo {
+    height: 45px;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #000;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.main-content {
+    flex: 1;
+    background-color: #1712a4;
+    background-image: url('../../assets/fondo-manos.png');
+    background-size: cover;
+    background-position: center;
+    padding: 3rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.quiz-card {
+    background-color: #ffffff;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 1000px;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+    padding: 3rem;
+}
+
+.quiz-body {
+    display: flex;
+    flex: 1;
+    gap: 4rem;
+}
+
+.left-side {
+    flex: 1;
+}
+
+.left-side h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.question-text {
+    font-size: 1.8rem;
+    margin-bottom: 3rem;
+}
+
+.options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.option-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.custom-checkbox {
+    width: 35px;
+    height: 35px;
+    background-color: #d1d5db;
+    border-radius: 4px;
+}
+
+.custom-checkbox.checked {
+    background-color: #1712a4;
+}
+
+.option-text {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.right-side {
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.grid-title {
+    font-size: 1.5rem;
+}
+
+.question-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.grid-item {
+    background-color: #a7a6e6;
+    color: #ffffff;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-radius: 8px;
+}
+
+.grid-item.active {
+    border-bottom: 5px solid #1712a4;
+}
+
+.help-box {
+    background-color: #a7a6e6;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    color: #ffffff;
+    margin-top: 1rem;
+}
+
+.help-mascot {
+    width: 80px;
+    height: auto;
+}
+
+.help-content h4 {
+    font-size: 1.1rem;
+    margin-bottom: 0.8rem;
+    color: #000;
+}
+
+.help-content p {
+    font-weight: bold;
+    font-size: 0.95rem;
+    margin-bottom: 0.3rem;
+}
+
+.quiz-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 3rem;
+}
+
+.nav-btn {
+    background-color: #fdf04b;
+    border: 1px solid #000;
+    padding: 0.8rem 1.5rem;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+}

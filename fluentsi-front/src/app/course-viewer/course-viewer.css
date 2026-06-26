@@ -1,0 +1,172 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.course-viewer-container {
+    display: flex;
+    height: 100vh;
+    font-family: sans-serif;
+    background-color: #ffffff;
+}
+
+.sidebar {
+    width: 300px;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    background-color: #fafafa;
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.sidebar-header h2 {
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.module-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background-color: #f3f4f6;
+    cursor: pointer;
+    color: #1712a4;
+}
+
+.module-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.module-progress {
+    font-size: 0.8rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.lesson-list {
+    list-style: none;
+}
+
+.lesson-list li {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    gap: 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    background-color: #ffffff;
+}
+
+.lesson-list li.active {
+    background-color: #eff6ff;
+}
+
+.lesson-title {
+    flex: 1;
+    font-size: 0.9rem;
+    color: #374151;
+}
+
+.lesson-list li.active .lesson-title {
+    color: #1712a4;
+    font-weight: 600;
+}
+
+.status-circle {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.top-bar {
+    background-color: #4361ee;
+    color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+}
+
+.top-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.top-bar h1 {
+    font-size: 1.2rem;
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.lesson-body {
+    padding: 3rem 5rem;
+    max-width: 900px;
+    color: #374151;
+    line-height: 1.6;
+}
+
+.lesson-body h2,
+.lesson-body h3 {
+    color: #1f2937;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.lesson-body h2 {
+    font-size: 1.5rem;
+    margin-top: 0;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.lesson-body h3 {
+    font-size: 1.3rem;
+    color: #1712a4;
+}
+
+.lesson-body p {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.content-list {
+    list-style-position: inside;
+    margin-bottom: 1.5rem;
+    padding-left: 1rem;
+}
+
+.content-list li {
+    margin-bottom: 1rem;
+}
+
+.example {
+    margin-top: 0.5rem;
+    padding-left: 1.5rem;
+    color: #1712a4;
+}

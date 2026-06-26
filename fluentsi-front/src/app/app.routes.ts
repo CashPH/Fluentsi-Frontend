@@ -8,6 +8,9 @@ import { MyAgendaComponent } from './agenda/agenda';
 import { StudentDashboardComponent } from './student-dashboard/student-dashboard';
 import { AuthGuard } from './services/auth.guard';
 import { NoAuthGuard } from './services/no-auth.guard';
+import { CourseViewerComponent } from './course-viewer/course-viewer';
+import { QuizComponent } from './quiz/quiz';
+import { CreateCourseComponent } from './create-course/create-course';
 
 export const routes: Routes = [
   { path: '', component: Login, canActivate: [NoAuthGuard] },
@@ -18,5 +21,8 @@ export const routes: Routes = [
   { path: 'teacher-home', component: TeacherDashboardComponent, canActivate: [AuthGuard] },
   { path: 'agenda', component: MyAgendaComponent, canActivate: [AuthGuard] },
   { path: 'student-dashboard', component: StudentDashboardComponent, canActivate: [AuthGuard] },
-  { path: 'student-home', component: StudentDashboardComponent, canActivate: [AuthGuard] }
-];
+  { path: 'student-home', component: StudentDashboardComponent, canActivate: [AuthGuard] },
+  { path: 'leccion', component: CourseViewerComponent, canActivate: [AuthGuard] },
+  { path: 'quiz', component: QuizComponent, canActivate: [AuthGuard] },
+  { path: 'crear-curso', component: CreateCourseComponent, canActivate: [AuthGuard] }
+];

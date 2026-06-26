@@ -1,0 +1,165 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.create-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: sans-serif;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 3rem;
+    background-color: #f2f2f2;
+    height: 80px;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+}
+
+.logo {
+    height: 45px;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #000;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.nav-links a.active {
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 5px;
+    color: #1712a4;
+}
+
+.nav-mascot {
+    height: 120px;
+    margin-top: 40px;
+}
+
+.main-content {
+    flex: 1;
+    background-color: #1712a4;
+    background-image: url('../../assets/fondo-manos.png');
+    background-size: cover;
+    background-position: center;
+    padding: 3rem;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.form-card {
+    background-color: #a7a6e6;
+    border-radius: 20px;
+    padding: 3rem;
+    width: 100%;
+    max-width: 700px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.form-card h2 {
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+    text-align: center;
+    color: #ffffff;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    background-color: #ffffff;
+    padding: 2.5rem;
+    border-radius: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    flex: 1;
+}
+
+.form-group label {
+    font-weight: bold;
+    font-size: 0.95rem;
+    color: #000;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    outline: none;
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.form-row {
+    display: flex;
+    gap: 2rem;
+}
+
+.align-center {
+    align-items: center;
+}
+
+.checkbox-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.checkbox-group input {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+}
+
+.checkbox-group label {
+    cursor: pointer;
+}
+
+.submit-btn {
+    background-color: #fdf04b;
+    border: 1px solid #000;
+    padding: 1rem;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-top: 1.5rem;
+    transition: transform 0.1s;
+}
+
+.submit-btn:disabled {
+    background-color: #d1d5db;
+    cursor: not-allowed;
+}
+
+.submit-btn:not(:disabled):hover {
+    transform: scale(1.02);
+}
