@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-login',
@@ -14,6 +15,7 @@ export class Login {
   loginForm!: FormGroup;
   loading = false;
   error: string | null = null;
+  loginType: 'student' | 'teacher' = 'student';
 
   constructor(
     private fb: FormBuilder,
@@ -30,6 +32,11 @@ export class Login {
     });
   }
 
+  setLoginType(type: 'student' | 'teacher'): void {
+    this.loginType = type;
+    this.error = null;
+  }
+
   onSubmit(): void {
     if (this.loginForm.invalid) {
       this.error = 'Por favor completa correctamente todos los campos';
@@ -41,7 +48,11 @@ export class Login {
 
     const { correo, password } = this.loginForm.value;
 
-    this.authService.loginStudent(correo, password).subscribe({
+    const loginRequest = this.loginType === 'student'
+      ? this.authService.loginStudent(correo, password)
+      : this.authService.loginTeacher(correo, password);
+
+    loginRequest.subscribe({
       next: (response) => {
         console.log('Login exitoso:', response);
         if (response.role === 'teacher') {
@@ -52,7 +63,16 @@ export class Login {
       },
       error: (error) => {
         this.loading = false;
-        this.error = error.error?.message || 'Error en el login. Verifica tus credenciales.';
+        this.error = error.error?.message || 'Credenciales inválidas';
+        
+        Swal.fire({
+          icon: 'error',
+          title: 'Credenciales Inválidas',
+          text: this.error || 'Por favor verifica tu correo y contraseña.',
+          confirmButtonColor: '#1712a4',
+          confirmButtonText: 'Aceptar'
+        });
+
         console.error('Login error:', error);
       }
     });

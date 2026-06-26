@@ -92,6 +92,29 @@
     color: #4a4a4a;
 }
 
+.role-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.role-toggle button {
+    background-color: transparent;
+    border: 2px solid #1712a4;
+    color: #1712a4;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.role-toggle button.active {
+    background-color: #1712a4;
+    color: white;
+}
+
 .mascot {
     height: 120px;
     margin-bottom: 1.5rem;

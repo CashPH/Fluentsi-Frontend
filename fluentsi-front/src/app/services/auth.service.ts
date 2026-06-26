@@ -81,6 +81,19 @@ export class AuthService {
     );
   }
 
+  // Teacher Login
+  loginTeacher(correo: string, password: string): Observable<StudentLoginResponse> {
+    return this.http.post<StudentLoginResponse>(`${this.apiUrl}/auth/teacher/login`, { correo, password }).pipe(
+      tap((response) => {
+        this.setAuthData(response);
+      }),
+      catchError((error) => {
+        console.error('Teacher Login error:', error);
+        throw error;
+      })
+    );
+  }
+
   private setAuthData(response: StudentLoginResponse): void {
     localStorage.setItem('authToken', response.token);
     localStorage.setItem('user', JSON.stringify({
