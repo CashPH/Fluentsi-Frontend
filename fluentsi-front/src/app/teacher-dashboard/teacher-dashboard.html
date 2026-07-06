@@ -3,10 +3,10 @@
         <div class="nav-left">
             <img src="assets/logo.png" alt="Logo" class="logo" />
             <ul class="nav-links">
-                <li><a href="javascript:void(0)" class="active">Inicio</a></li>
-                <li><a href="javascript:void(0)">Mi agenda</a></li>
-                <li><a href="javascript:void(0)">Cursos</a></li>
-                <li><a href="javascript:void(0)">Revisiones</a></li>
+                <li><a routerLink="/teacher-home" class="active">Inicio</a></li>
+                <li><a routerLink="/agenda">Mi agenda</a></li>
+                <li><a routerLink="/cursos">Cursos</a></li>
+                <li><a routerLink="/revisiones">Revisiones</a></li>
             </ul>
         </div>
         <div class="nav-right">
@@ -71,8 +71,7 @@
                                 <span class="icon">📅</span>
                             </div>
                         </div>
-
-                        <div class="quick-card">
+                        <div class="quick-card" routerLink="/cursos" style="cursor: pointer;">
                             <h4>Mis Cursos</h4>
                             <div class="quick-card-bottom">
                                 <span class="arrow">→</span>

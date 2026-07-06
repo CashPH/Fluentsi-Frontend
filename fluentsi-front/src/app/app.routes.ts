@@ -11,6 +11,7 @@ import { NoAuthGuard } from './services/no-auth.guard';
 import { CourseViewerComponent } from './course-viewer/course-viewer';
 import { QuizComponent } from './quiz/quiz';
 import { CreateCourseComponent } from './create-course/create-course';
+import { AddLessonsComponent } from './add-lessons/add-lessons';
 
 export const routes: Routes = [
   { path: '', component: Login, canActivate: [NoAuthGuard] },
@@ -24,5 +25,14 @@ export const routes: Routes = [
   { path: 'student-home', component: StudentDashboardComponent, canActivate: [AuthGuard] },
   { path: 'leccion', component: CourseViewerComponent, canActivate: [AuthGuard] },
   { path: 'quiz', component: QuizComponent, canActivate: [AuthGuard] },
-  { path: 'crear-curso', component: CreateCourseComponent, canActivate: [AuthGuard] }
+  
+  // ==========================================
+  // RUTAS DEL INSTRUCTOR (GESTIÓN DE CURSOS)
+  // ==========================================
+  { path: 'crear-curso', component: CreateCourseComponent, canActivate: [AuthGuard] },
+  
+  { path: 'editar-curso/:id', component: CreateCourseComponent, canActivate: [AuthGuard] },
+  
+  // Ruta para agregar lecciones a un curso específico
+  { path: 'agregar-lecciones/:id', component: AddLessonsComponent, canActivate: [AuthGuard] }
 ];

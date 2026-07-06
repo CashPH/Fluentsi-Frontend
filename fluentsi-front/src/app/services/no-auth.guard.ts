@@ -11,7 +11,6 @@ export class NoAuthGuard implements CanActivate {
   canActivate(): boolean {
     if (this.authService.isAuthenticated()) {
       const user = this.authService.getUser();
-      // Redirige según el rol del usuario
       if (user?.role === 'teacher') {
         this.router.navigate(['/teacher-home']);
       } else {

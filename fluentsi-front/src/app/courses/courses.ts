@@ -1,22 +1,43 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common'
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core'; // 1. Importamos ChangeDetectorRef
+import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-courses',
-  imports: [CommonModule],
+  standalone: true,
+  imports: [CommonModule, RouterModule],
   templateUrl: './courses.html',
   styleUrl: './courses.css',
 })
-export class CoursesComponent {
-  niveles = ['-A1', 'A1', 'A2', 'B1', 'B2', 'C1'];
-  etiquetas = ['Test', 'Inglés', 'Principiante', 'Avanzado'];
+export class CoursesComponent implements OnInit {
+  private http = inject(HttpClient);
+  private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef); // 2. Lo inyectamos en el componente
 
-  cursos = [
-    { nivel: 'A1', titulo: 'Nouns Level 1', img: 'assets/curso1.jpg' },
-    { nivel: '-A1', titulo: 'Curso 1', img: 'assets/curso2.jpg' },
-    { nivel: 'B1', titulo: 'Curso 2', img: 'assets/curso3.jpg' },
-    { nivel: 'C1', titulo: 'Curso 3', img: 'assets/curso4.jpg' },
-    { nivel: 'B2', titulo: 'Curso 4', img: 'assets/curso5.jpg' },
-    { nivel: 'A2', titulo: 'Curso 5', img: 'assets/curso6.jpg' }
-  ];
+  niveles = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+  etiquetas = ['Test', 'Inglés', 'Francés'];
+  
+  cursos: any[] = []; 
+
+  ngOnInit(): void {
+    this.cargarCursos();
+  }
+
+  cargarCursos(): void {
+    this.http.get('http://localhost:4000/api/cursos').subscribe({
+      next: (data: any) => {
+        this.cursos = data;
+        
+        this.cdr.detectChanges(); 
+      },
+      error: (err) => {
+        console.error('Error al cargar los cursos:', err);
+      }
+    });
+  }
+
+  gestionarCurso(idCurso: number): void {
+    this.router.navigate(['/editar-curso', idCurso]);
+  }
 }

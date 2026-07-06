@@ -1,0 +1,142 @@
+<div class="course-viewer-container">
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <button routerLink="/cursos" class="back-btn">← Volver a Cursos</button>
+            <h2 style="margin-top: 1rem;">Temario del Curso</h2>
+        </div>
+
+        <div class="module-section">
+            <div class="module-header">
+                <h3 class="module-title">Lecciones Creadas</h3>
+                <span class="module-progress">{{ lecciones.length }}</span>
+            </div>
+
+            <ul class="lesson-list">
+                <li *ngFor="let item of lecciones">
+                    <span class="icon">📄</span>
+                    <span class="lesson-title">{{ item.orden }}. {{ item.titulo }}</span>
+
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <span class="edit-icon" (click)="editarLeccion(item)" title="Editar lección">⚙️</span>
+                        <span class="delete-icon" (click)="eliminarLeccionDelTemario(item.id_leccion)"
+                            title="Eliminar lección">🗑️</span>
+                    </div>
+                </li>
+
+                <li *ngIf="lecciones.length === 0" style="color: #6b7280; font-size: 0.9rem;">
+                    Aún no hay lecciones. ¡Agrega la primera!
+                </li>
+            </ul>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <h1>{{ leccionEnEdicionId ? 'EDITAR LECCIÓN' : 'AGREGAR NUEVA LECCIÓN' }}</h1>
+            </div>
+        </header>
+
+        <div class="lesson-body">
+            <h2>Diseña el contenido</h2>
+            <p>Usa este espacio para estructurar el material que verá el alumno en la plataforma.</p>
+
+            <form [formGroup]="lessonForm" (ngSubmit)="onSubmit()" class="modern-form">
+
+                <div class="form-group">
+                    <label>Título de la lección</label>
+                    <input type="text" formControlName="titulo" placeholder="Ej. Present Simple - Rules">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label>Tipo de Contenido</label>
+                        <select formControlName="tipo_contenido">
+                            <option value="Lectura">Lectura / Texto</option>
+                            <option value="Video">Video</option>
+                            <option value="Quiz">Quiz / Examen</option>
+                        </select>
+                    </div>
+                    <div class="form-group half">
+                        <label>Orden (Número en el temario)</label>
+                        <input type="number" formControlName="orden">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label *ngIf="lessonForm.get('tipo_contenido')?.value === 'Lectura'">Contenido (Texto, HTML o
+                        Instrucciones)</label>
+                    <label *ngIf="lessonForm.get('tipo_contenido')?.value === 'Video'">URL del Video (YouTube o
+                        Vimeo)</label>
+                    <label *ngIf="lessonForm.get('tipo_contenido')?.value === 'Quiz'">Constructor de Exámenes</label>
+
+                    <quill-editor *ngIf="lessonForm.get('tipo_contenido')?.value === 'Lectura'"
+                        formControlName="contenido"
+                        placeholder="Escribe aquí las reglas gramaticales, inserta imágenes, listas o colores..."
+                        [styles]="{height: '350px', backgroundColor: '#ffffff'}">
+                    </quill-editor>
+
+                    <input *ngIf="lessonForm.get('tipo_contenido')?.value === 'Video'" type="url"
+                        formControlName="contenido" placeholder="Ej. https://www.youtube.com/watch?v=..."
+                        style="width: 100%; box-sizing: border-box;">
+
+                    <div *ngIf="lessonForm.get('tipo_contenido')?.value === 'Quiz'" class="quiz-builder-container">
+
+                        <div formArrayName="preguntas">
+                            <div *ngFor="let pregunta of preguntas.controls; let i = index" [formGroupName]="i"
+                                class="question-card">
+
+                                <div class="question-header">
+                                    <h4>Pregunta {{ i + 1 }}</h4>
+                                    <button type="button" class="delete-btn" (click)="eliminarPregunta(i)">🗑️
+                                        Eliminar</button>
+                                </div>
+
+                                <div class="form-group" style="margin-top: 1rem;">
+                                    <input type="text" formControlName="pregunta_texto"
+                                        placeholder="Ej. ¿Cuál es el auxiliar para She/He/It en negativo?">
+                                </div>
+
+                                <div formArrayName="opciones" class="options-container">
+                                    <label style="font-size: 0.85rem; color: #6b7280; margin-bottom: 0.5rem;">Opciones
+                                        de respuesta (Selecciona la correcta):</label>
+
+                                    <div *ngFor="let opcion of getOpciones(i).controls; let j = index"
+                                        [formGroupName]="j" class="option-row">
+                                        <input type="radio" [name]="'correcta_' + i"
+                                            [checked]="opcion.get('es_correcta')?.value"
+                                            (change)="marcarComoCorrecta(i, j)" class="radio-correct">
+
+                                        <input type="text" formControlName="opcion_texto" placeholder="Ej. doesn't"
+                                            class="option-input">
+
+                                        <button type="button" class="delete-icon-btn" (click)="eliminarOpcion(i, j)"
+                                            *ngIf="getOpciones(i).length > 2">❌</button>
+                                    </div>
+
+                                    <button type="button" class="add-option-btn" (click)="agregarOpcion(i)">+ Agregar
+                                        otra opción</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" class="add-question-btn" (click)="agregarPregunta()">+ Añadir Nueva
+                            Pregunta al Examen</button>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem; align-items: center; margin-top: 1rem;">
+                    <button type="submit" [disabled]="lessonForm.invalid" class="submit-btn">
+                        {{ leccionEnEdicionId ? 'Actualizar Lección' : 'Guardar Lección en la Base de Datos' }}
+                    </button>
+
+                    <a *ngIf="leccionEnEdicionId" (click)="prepararNuevaLeccion()"
+                        style="color: #ef4444; cursor: pointer; text-decoration: underline; font-weight: bold;">
+                        Cancelar edición
+                    </a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+</div>

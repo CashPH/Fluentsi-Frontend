@@ -55,7 +55,6 @@ export class AuthService {
     return user ? JSON.parse(user) : null;
   }
 
-  // Student Registration
   registerStudent(data: StudentRegisterRequest): Observable<StudentLoginResponse> {
     return this.http.post<StudentLoginResponse>(`${this.apiUrl}/auth/student/register`, data).pipe(
       tap((response) => {
@@ -68,7 +67,6 @@ export class AuthService {
     );
   }
 
-  // Student Login
   loginStudent(correo: string, password: string): Observable<StudentLoginResponse> {
     return this.http.post<StudentLoginResponse>(`${this.apiUrl}/auth/student/login`, { correo, password }).pipe(
       tap((response) => {
@@ -81,7 +79,6 @@ export class AuthService {
     );
   }
 
-  // Teacher Login
   loginTeacher(correo: string, password: string): Observable<StudentLoginResponse> {
     return this.http.post<StudentLoginResponse>(`${this.apiUrl}/auth/teacher/login`, { correo, password }).pipe(
       tap((response) => {

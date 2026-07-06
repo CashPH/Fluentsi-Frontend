@@ -57,7 +57,6 @@ router.post('/login', body('usuario').exists(), body('password').exists(), async
   }
 });
 
-// Student Registration
 router.post(
   '/student/register',
   body('nombre').notEmpty(),
@@ -93,7 +92,6 @@ router.post(
   }
 );
 
-// Inicio de Sesion de Estudiantes
 router.post(
   '/student/login',
   body('correo').isEmail(),
@@ -127,7 +125,6 @@ router.post(
   }
 );
 
-//Login Maestros(Teachers)
 router.post(
   '/teacher/login',
   body('correo').isEmail(),
