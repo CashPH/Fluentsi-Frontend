@@ -64,7 +64,7 @@ export class CreateCourseComponent implements OnInit {
       this.http.put(`http://localhost:4000/api/cursos/${this.currentCourseId}`, this.courseForm.value)
         .subscribe({
           next: (res: any) => {
-            alert('¡Curso actualizado exitosamente, mi perro!');
+            alert('¡Curso actualizado exitosamente!');
             this.router.navigate(['/agregar-lecciones', this.currentCourseId]);
           },
           error: (err) => {

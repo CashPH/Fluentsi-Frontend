@@ -83,7 +83,7 @@ app.get('/api/cursos/:id', async (req: Request, res: Response): Promise<any> => 
     const [rows]: any = await pool.execute('SELECT * FROM cursos WHERE id_curso = ?', [id]);
     
     if (rows.length === 0) {
-      return res.status(404).json({ message: 'Curso no encontrado, mi perro' });
+      return res.status(404).json({ message: 'Curso no encontrado' });
     }
     
     res.json(rows[0]);
