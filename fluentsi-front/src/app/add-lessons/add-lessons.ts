@@ -79,7 +79,7 @@ export class AddLessonsComponent implements OnInit {
             const opcionesFormArray = this.fb.array(
               pregunta.opciones.map((opcion: any) => this.fb.group({
                 opcion_texto: [opcion.opcion_texto, Validators.required],
-                es_correcta: [opcion.es_correcta === 1] // En MySQL se guarda como 1 (true) o 0 (false)
+                es_correcta: [opcion.es_correcta === 1] 
               }))
             );
 
@@ -165,7 +165,7 @@ export class AddLessonsComponent implements OnInit {
       tipo_contenido: this.lessonForm.value.tipo_contenido,
       contenido: this.lessonForm.value.contenido,
       orden: this.lessonForm.value.orden,
-      preguntas: this.lessonForm.value.preguntas // Mandamos todas las preguntas actualizadas
+      preguntas: this.lessonForm.value.preguntas 
     };
 
     if (this.leccionEnEdicionId) {

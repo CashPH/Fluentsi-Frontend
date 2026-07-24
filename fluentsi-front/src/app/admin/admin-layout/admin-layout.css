@@ -1,0 +1,71 @@
+.admin-theme {
+    display: flex;
+    height: 100vh;
+    background-color: #f4f6f9;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+.admin-sidebar {
+    width: 260px;
+    background-color: #0d1b2a;
+    /* Azul oscuro elegante */
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-brand {
+    padding: 24px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-brand span {
+    color: #ffcc00;
+    /* Amarillo acento Fluentsi */
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+}
+
+.sidebar-nav a {
+    padding: 14px 24px;
+    color: #a0aec0;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.08);
+    border-left: 4px solid #ffcc00;
+}
+
+.admin-main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.admin-topbar {
+    height: 70px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    padding: 0 30px;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.admin-view-container {
+    padding: 30px;
+}

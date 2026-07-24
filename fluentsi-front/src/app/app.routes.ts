@@ -34,5 +34,13 @@ export const routes: Routes = [
   { path: 'editar-curso/:id', component: CreateCourseComponent, canActivate: [AuthGuard] },
   
   // Ruta para agregar lecciones a un curso específico
-  { path: 'agregar-lecciones/:id', component: AddLessonsComponent, canActivate: [AuthGuard] }
+  { path: 'agregar-lecciones/:id', component: AddLessonsComponent, canActivate: [AuthGuard] },
+
+
+  // ==========================================
+  // RUTAS DEL ADMINISTRADOR
+  // ==========================================
+
+  { path: 'admin', loadChildren: () => import('./admin/admin.routes').then(m => m.ADMIN_ROUTES) 
+  }
 ];

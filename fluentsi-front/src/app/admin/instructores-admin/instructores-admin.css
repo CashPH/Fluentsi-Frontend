@@ -1,0 +1,144 @@
+/* =========================================
+   ESTILOS GENERALES
+   ========================================= */
+.dashboard-container { animation: fadeIn 0.4s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.dashboard-title { font-size: 1.8rem; color: #0d1b2a; margin: 0 0 5px 0; font-weight: 700; }
+.dashboard-subtitle { color: #718096; margin: 0; font-size: 0.95rem; }
+
+/* =========================================
+   BOTONES
+   ========================================= */
+.btn-primary {
+  background-color: #ffcc00;
+  color: #0d1b2a;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(255, 204, 0, 0.3);
+}
+
+.btn-primary:hover {
+  background-color: #e6b800;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background-color: #e2e8f0;
+  color: #4a5568;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: transform 0.2s;
+}
+
+.btn-icon:hover { transform: scale(1.2); }
+
+/* =========================================
+   TABLA
+   ========================================= */
+.mt-4 { margin-top: 40px; }
+.table-container { background: #ffffff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); overflow: hidden; }
+.admin-table { width: 100%; border-collapse: collapse; text-align: left; }
+.admin-table th { background-color: #f4f6f9; color: #718096; font-weight: 600; padding: 16px 24px; font-size: 0.85rem; text-transform: uppercase; }
+.admin-table td { padding: 16px 24px; border-bottom: 1px solid #edf2f7; color: #2d3748; font-size: 0.95rem; }
+.admin-table tbody tr:hover { background-color: #f8fafc; }
+
+.badge { padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+.status-activo { background-color: #f0fff4; color: #2f855a; }
+.status-inactivo { background-color: #fff5f5; color: #c53030; }
+
+/* =========================================
+   MODAL FLOTANTE
+   ========================================= */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(13, 27, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  animation: modalIn 0.3s ease-out;
+}
+
+.modal-content h2 { margin-top: 0; color: #0d1b2a; }
+.modal-actions { margin-top: 30px; display: flex; justify-content: flex-end; }
+.placeholder-form { padding: 40px 0; text-align: center; color: #a0aec0; border: 2px dashed #e2e8f0; border-radius: 8px;}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(-20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* =========================================
+   FORMULARIO DEL MODAL
+   ========================================= */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  color: #4a5568;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.form-control {
+  padding: 10px 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #2d3748;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: #ffcc00;
+  box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.2);
+}

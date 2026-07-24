@@ -1,0 +1,88 @@
+<div class="dashboard-container">
+  
+  <div class="header-actions">
+    <div>
+      <h1 class="dashboard-title">Gestión de Instructores</h1>
+      <p class="dashboard-subtitle">Administra los accesos y datos de tus maestros.</p>
+    </div>
+    <button class="btn-primary" (click)="abrirModalNuevo()">
+      + Nuevo Instructor
+    </button>
+  </div>
+
+  <div class="table-container mt-4">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre Completo</th>
+          <th>Correo</th>
+          <th>Teléfono</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let prof of instructores">
+          <td>#{{ prof.id_instructor }}</td>
+          <td>{{ prof.nombre }} {{ prof.ap_paterno }}</td>
+          <td>{{ prof.correo || 'Sin correo' }}</td>
+          <td>{{ prof.num_telefono || 'N/A' }}</td>
+          <td>
+            <span class="badge" [ngClass]="prof.activo ? 'status-activo' : 'status-inactivo'">
+              {{ prof.activo ? 'Activo' : 'Baja' }}
+            </span>
+          </td>
+          <td class="action-buttons">
+            
+            <button class="btn-icon edit" title="Editar" (click)="abrirModalEditar(prof)">✏️</button>
+            <button class="btn-icon delete" title="Eliminar" (click)="eliminarInstructor(prof.id_instructor)">🗑️</button>
+          </td>
+        </tr>
+        <tr *ngIf="instructores.length === 0">
+          <td colspan="6" class="text-center">No hay instructores registrados.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="modal-overlay" *ngIf="mostrarModal">
+    <div class="modal-content">
+      
+      <h2>{{ modoEdicion ? 'Editar Instructor' : 'Registrar Nuevo Instructor' }}</h2>
+      <p style="color: #718096; margin-bottom: 20px;">Llena los datos para el maestro.</p>
+      
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label>Nombre *</label>
+          <input type="text" class="form-control" [(ngModel)]="nuevoInstructor.nombre" placeholder="Ej. Juan">
+        </div>
+        <div class="form-group">
+          <label>Apellido Paterno *</label>
+          <input type="text" class="form-control" [(ngModel)]="nuevoInstructor.ap_paterno" placeholder="Ej. Pérez">
+        </div>
+        <div class="form-group">
+          <label>Apellido Materno</label>
+          <input type="text" class="form-control" [(ngModel)]="nuevoInstructor.ap_materno" placeholder="Opcional">
+        </div>
+        <div class="form-group full-width">
+          <label>Correo Electrónico *</label>
+          <input type="email" class="form-control" [(ngModel)]="nuevoInstructor.correo" placeholder="correo@fluentsi.com">
+        </div>
+        <div class="form-group full-width">
+          <label>Teléfono</label>
+          <input type="text" class="form-control" [(ngModel)]="nuevoInstructor.num_telefono" placeholder="Ej. 4491234567">
+        </div>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
+        
+        <button class="btn-primary" (click)="guardarInstructor()">
+          {{ modoEdicion ? 'Actualizar Cambios' : 'Guardar Instructor' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,25 @@
+<div class="admin-theme">
+    <aside class="admin-sidebar">
+        <div class="sidebar-brand">
+            <h2>FLUENTSI <span>Admin</span></h2>
+        </div>
+        <nav class="sidebar-nav">
+            <a routerLink="/admin/dashboard" routerLinkActive="active">Inicio</a>
+            <a routerLink="/admin/instructores" routerLinkActive="active">Instructores</a>
+            <a routerLink="/admin/administradores" routerLinkActive="active">Administradores</a>
+            <a routerLink="/admin/prospectos" routerLinkActive="active">Prospectos</a>
+        </nav>
+    </aside>
+
+    
+    <div class="admin-main-content">
+        <header class="admin-topbar">
+            <span class="admin-welcome">Panel de Control</span>
+
+        </header>
+
+        <main class="admin-view-container">
+            <router-outlet></router-outlet>
+        </main>
+    </div>
+</div>

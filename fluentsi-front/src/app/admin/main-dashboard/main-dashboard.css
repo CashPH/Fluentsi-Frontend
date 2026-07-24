@@ -1,0 +1,144 @@
+/* =========================================
+   ESTILOS GENERALES Y ANIMACIONES
+   ========================================= */
+.dashboard-container {
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard-header {
+  margin-bottom: 30px;
+}
+
+.dashboard-title {
+  font-size: 1.8rem;
+  color: #0d1b2a;
+  margin: 0 0 5px 0;
+  font-weight: 700;
+}
+
+.dashboard-subtitle {
+  color: #718096;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* =========================================
+   TARJETAS (KPIs)
+   ========================================= */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.kpi-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-left: 5px solid #ffcc00; 
+}
+
+.kpi-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+}
+
+.kpi-icon {
+  font-size: 2rem;
+  margin-right: 20px;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #f4f6f9;
+}
+
+.kpi-data h3 {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #a0aec0;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 600;
+}
+
+.kpi-value {
+  margin: 5px 0 0;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #2d3748;
+}
+
+/* =========================================
+   TABLA DE PROSPECTOS
+   ========================================= */
+.mt-4 { margin-top: 40px; }
+
+.section-title {
+  font-size: 1.2rem;
+  color: #0d1b2a;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.table-container {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  overflow: hidden;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.admin-table th {
+  background-color: #f4f6f9;
+  color: #718096;
+  font-weight: 600;
+  padding: 16px 24px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.admin-table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid #edf2f7;
+  color: #2d3748;
+  font-size: 0.95rem;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-nuevo { background-color: #ebf8ff; color: #2b6cb0; }
+.status-contactado { background-color: #faf5ff; color: #6b46c1; }
+.status-interesado { background-color: #fffaf0; color: #c05621; }
+.status-inscrito { background-color: #f0fff4; color: #2f855a; }
+.text-center { text-align: center; color: #a0aec0; }

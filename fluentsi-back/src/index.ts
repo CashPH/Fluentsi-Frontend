@@ -247,6 +247,7 @@ app.put('/api/lecciones/:id_leccion', async (req: Request, res: Response): Promi
     res.status(500).json({ error: 'Error al actualizar la lección' });
   }
 });
+
 // ==========================================
 // RUTA PARA ELIMINAR LECCIONES (DELETE)
 // ==========================================
@@ -273,6 +274,190 @@ app.delete('/api/lecciones/:id_leccion', async (req: Request, res: Response): Pr
   } catch (error) {
     console.error('ERROR SQL AL ELIMINAR LECCIÓN:', error);
     res.status(500).json({ error: 'Error al eliminar la lección' });
+  }
+});
+
+// ==========================================
+// RUTAS PANEL ADMINISTRATIVO (DASHBOARD)
+// ==========================================
+
+app.get('/api/admin/dashboard/metrics', async (req: Request, res: Response): Promise<any> => {
+  try {
+    // 1. Contar alumnos activos (basado en la tabla estudiantes)
+    const [alumnos]: any = await pool.execute('SELECT COUNT(*) AS total FROM estudiantes WHERE activo = 1');
+    
+    // 2. Contar instructores activos (basado en la tabla instructores)
+    const [instructores]: any = await pool.execute('SELECT COUNT(*) AS total FROM instructores WHERE activo = 1');
+    
+    // 3. Contar grupos totales (basado en la tabla grupos)
+    const [grupos]: any = await pool.execute('SELECT COUNT(*) AS total FROM grupos');
+
+    // Retornamos el JSON con la estructura que espera tu Angular
+    res.json({
+      success: true,
+      data: {
+        totalAlumnos: alumnos[0].total,
+        instructoresActivos: instructores[0].total,
+        gruposActivos: grupos[0].total
+      }
+    });
+
+  } catch (error) {
+    console.error('ERROR SQL AL CARGAR MÉTRICAS DEL DASHBOARD:', error);
+    res.status(500).json({ error: 'Error al obtener las métricas del dashboard administrativo' });
+  }
+});
+
+// RUTAS NUEVAS PARA PROSPECTOS
+app.get('/api/admin/dashboard/prospectos-recientes', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const [prospectos]: any = await pool.execute(
+      'SELECT id_prospecto, nombre, ap_paterno, telefono, estado, fecha_registro FROM prospectos ORDER BY fecha_registro DESC LIMIT 5'
+    );
+    
+    res.json({
+      success: true,
+      data: prospectos
+    });
+  } catch (error) {
+    console.error('ERROR SQL AL CARGAR PROSPECTOS RECIENTES:', error);
+    res.status(500).json({ error: 'Error al obtener los prospectos recientes' });
+  }
+});
+
+// ==========================================
+// RUTAS DE INSTRUCTORES (ADMIN)
+// ==========================================
+app.get('/api/admin/instructores', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const [rows] = await pool.execute(
+      'SELECT id_instructor, nombre, ap_paterno, ap_materno, correo, num_telefono, activo, fecha_ingreso FROM instructores ORDER BY id_instructor DESC'
+    );
+    
+    res.json({
+      success: true,
+      data: rows
+    });
+  } catch (error) {
+    console.error('ERROR SQL AL OBTENER INSTRUCTORES:', error);
+    res.status(500).json({ error: 'Error al obtener la lista de instructores' });
+  }
+});
+
+app.post('/api/admin/instructores', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { nombre, ap_paterno, ap_materno, correo, num_telefono } = req.body;
+    
+    const query = `
+      INSERT INTO instructores (nombre, ap_paterno, ap_materno, correo, num_telefono, activo) 
+      VALUES (?, ?, ?, ?, ?, 1)
+    `;
+    
+    const [result] = await pool.execute(query, [
+      nombre, 
+      ap_paterno, 
+      ap_materno || '', 
+      correo, 
+      num_telefono || ''
+    ]);
+
+    res.status(201).json({ 
+      success: true, 
+      mensaje: 'Instructor creado con éxito',
+      id_instructor: (result as any).insertId 
+    });
+
+  } catch (error) {
+    console.error('ERROR SQL AL CREAR INSTRUCTOR:', error);
+    res.status(500).json({ error: 'Hubo un problema al guardar el instructor' });
+  }
+});
+
+// Actualizar Instructor (Editar)
+app.put('/api/admin/instructores/:id', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const { nombre, ap_paterno, ap_materno, correo, num_telefono } = req.body;
+    
+    const query = `
+      UPDATE instructores 
+      SET nombre = ?, ap_paterno = ?, ap_materno = ?, correo = ?, num_telefono = ?
+      WHERE id_instructor = ?
+    `;
+    
+    await pool.execute(query, [nombre, ap_paterno, ap_materno || '', correo, num_telefono || '', id]);
+    res.json({ success: true, mensaje: 'Instructor actualizado con éxito' });
+  } catch (error) {
+    console.error('ERROR SQL AL ACTUALIZAR:', error);
+    res.status(500).json({ error: 'Error al actualizar el instructor' });
+  }
+});
+
+// Eliminar Instructor
+app.delete('/api/admin/instructores/:id', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+    await pool.execute('DELETE FROM instructores WHERE id_instructor = ?', [id]);
+    res.json({ success: true, mensaje: 'Instructor eliminado' });
+  } catch (error) {
+    console.error('ERROR SQL AL ELIMINAR:', error);
+    res.status(500).json({ error: 'Error al eliminar el instructor' });
+  }
+});
+
+// ==========================================
+// RUTAS DE ADMINISTRADORES (CON ROLES)
+// ==========================================
+
+app.get('/api/admin/administradores', async (req: Request, res: Response): Promise<any> => {
+  try {
+    // Agregamos 'privilegios' a la consulta
+    const [rows] = await pool.execute(
+      'SELECT id_admin, nombre, usuario AS correo, privilegios, 1 AS activo FROM administradores ORDER BY id_admin DESC'
+    );
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('ERROR SQL:', error);
+    res.status(500).json({ error: 'Error al obtener administradores' });
+  }
+});
+
+app.post('/api/admin/administradores', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { nombre, correo, password, privilegios } = req.body;
+    // Insertamos el valor real de privilegios
+    const query = `INSERT INTO administradores (nombre, ap_paterno, usuario, password, privilegios) VALUES (?, 'N/A', ?, ?, ?)`;
+    const [result] = await pool.execute(query, [nombre, correo, password || '123456', privilegios]);
+    
+    res.status(201).json({ success: true, id_admin: (result as any).insertId });
+  } catch (error) {
+    console.error('ERROR SQL:', error);
+    res.status(500).json({ error: 'Error al guardar administrador' });
+  }
+});
+
+app.put('/api/admin/administradores/:id', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const { nombre, correo, privilegios } = req.body;
+    // Actualizamos también los privilegios
+    await pool.execute('UPDATE administradores SET nombre = ?, usuario = ?, privilegios = ? WHERE id_admin = ?', [nombre, correo, privilegios, id]);
+    res.json({ success: true, mensaje: 'Admin actualizado' });
+  } catch (error) {
+    console.error('ERROR SQL:', error);
+    res.status(500).json({ error: 'Error al actualizar administrador' });
+  }
+});
+
+// El DELETE se queda exactamente igual
+app.delete('/api/admin/administradores/:id', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+    await pool.execute('DELETE FROM administradores WHERE id_admin = ?', [id]);
+    res.json({ success: true, mensaje: 'Admin eliminado' });
+  } catch (error) {
+    console.error('ERROR SQL:', error);
+    res.status(500).json({ error: 'Error al eliminar administrador' });
   }
 });
 

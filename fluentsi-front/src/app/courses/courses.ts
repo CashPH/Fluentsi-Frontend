@@ -13,7 +13,7 @@ import { Router, RouterModule } from '@angular/router';
 export class CoursesComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
-  private cdr = inject(ChangeDetectorRef); // 2. Lo inyectamos en el componente
+  private cdr = inject(ChangeDetectorRef); 
 
   niveles = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
   etiquetas = ['Test', 'Inglés', 'Francés'];

@@ -1,0 +1,97 @@
+<div class="dashboard-container">
+  
+  <div class="header-actions">
+    <div>
+      <h1 class="dashboard-title">Gestión de Administradores</h1>
+      <p class="dashboard-subtitle">Controla quién tiene acceso a este panel.</p>
+    </div>
+    <button class="btn-primary" (click)="abrirModalNuevo()">
+      + Nuevo Administrador
+    </button>
+  </div>
+
+  <div class="table-container mt-4">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Correo Electrónico</th>
+          
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let admin of administradores">
+          <td>#{{ admin.id_admin }}</td>
+          <td>{{ admin.nombre }}</td>
+          <td>{{ admin.correo }}</td>
+          
+          
+          <td>
+            <span style="font-weight: 600; color: #4a5568;">
+              {{ admin.privilegios == 1 ? 'Super Admin' : (admin.privilegios == 2 ? 'Moderador' : 'Lector') }}
+            </span>
+          </td>
+
+          <td>
+            <span class="badge" [ngClass]="admin.activo ? 'status-activo' : 'status-inactivo'">
+              {{ admin.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="action-buttons">
+            <button class="btn-icon edit" title="Editar" (click)="abrirModalEditar(admin)">✏️</button>
+            <button class="btn-icon delete" title="Eliminar" (click)="eliminarAdministrador(admin.id_admin)">🗑️</button>
+          </td>
+        </tr>
+        <tr *ngIf="administradores.length === 0">
+          
+          <td colspan="6" class="text-center">No hay administradores registrados.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="modal-overlay" *ngIf="mostrarModal">
+    <div class="modal-content">
+      <h2>{{ modoEdicion ? 'Editar Administrador' : 'Registrar Nuevo Administrador' }}</h2>
+      <p style="color: #718096; margin-bottom: 20px;">Datos de acceso al sistema.</p>
+      
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label>Nombre Completo *</label>
+          <input type="text" class="form-control" [(ngModel)]="nuevoAdmin.nombre" placeholder="Ej. Luis">
+        </div>
+        <div class="form-group full-width">
+          <label>Correo Electrónico *</label>
+          <input type="email" class="form-control" [(ngModel)]="nuevoAdmin.correo" placeholder="admin@fluentsi.com">
+        </div>
+        <div class="form-group full-width" *ngIf="!modoEdicion">
+          <label>Contraseña *</label>
+          <input type="password" class="form-control" [(ngModel)]="nuevoAdmin.password" placeholder="Mínimo 6 caracteres">
+        </div>
+        
+        
+        <div class="form-group full-width">
+          <label>Nivel de Privilegios *</label>
+          <select class="form-control" [(ngModel)]="nuevoAdmin.privilegios">
+            <option [value]="1">Super Administrador (Control Total)</option>
+            <option [value]="2">Moderador (Solo ver / editar algunas cosas)</option>
+            <option [value]="3">Lector (Solo lectura)</option>
+          </select>
+        </div>
+        
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn-primary" (click)="guardarAdministrador()">
+          {{ modoEdicion ? 'Actualizar Cambios' : 'Guardar Administrador' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

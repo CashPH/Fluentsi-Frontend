@@ -1,0 +1,68 @@
+<div class="dashboard-container">
+  
+  
+  <div class="dashboard-header">
+    <h1 class="dashboard-title">Resumen General</h1>
+    <p class="dashboard-subtitle">Bienvenido al panel administrativo de Fluentsi.</p>
+  </div>
+
+  
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon alumnos-icon">🎓</div>
+      <div class="kpi-data">
+        <h3>Alumnos Inscritos</h3>
+        <p class="kpi-value">{{ totalAlumnos }}</p>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon instructores-icon">👨‍🏫</div>
+      <div class="kpi-data">
+        <h3>Instructores</h3>
+        <p class="kpi-value">{{ instructoresActivos }}</p>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon grupos-icon">📚</div>
+      <div class="kpi-data">
+        <h3>Grupos Activos</h3>
+        <p class="kpi-value">{{ gruposActivos }}</p>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="dashboard-section mt-4">
+    <h2 class="section-title">Últimos Prospectos Registrados</h2>
+    <div class="table-container">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>Estado</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let prospecto of prospectosRecientes">
+            <td>{{ prospecto.nombre }} {{ prospecto.ap_paterno }}</td>
+            <td>{{ prospecto.telefono || 'N/A' }}</td>
+            <td>
+              <span class="badge status-{{ prospecto.estado ? prospecto.estado.toLowerCase().replace(' ', '-') : 'nuevo' }}">
+                {{ prospecto.estado || 'Nuevo' }}
+              </span>
+            </td>
+            <td>{{ prospecto.fecha_registro | date:'dd/MM/yyyy' }}</td>
+          </tr>
+          <tr *ngIf="prospectosRecientes.length === 0">
+            <td colspan="4" class="text-center">No hay prospectos recientes.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
