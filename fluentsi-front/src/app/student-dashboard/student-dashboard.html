@@ -14,7 +14,12 @@
     </nav>
 
     <main class="main-content">
-        <h1 class="welcome-title">Bienvenido &lt;Nombre alumno&gt;!</h1>
+        <h1 class="welcome-title">¡Bienvenido {{ nombreCompleto }}!</h1>
+
+        <!-- Mensaje de éxito al inscribirse -->
+        <div class="success-toast" *ngIf="mensajeExito">
+            ✅ {{ mensajeExito }}
+        </div>
 
         <div class="dashboard-grid">
 
@@ -24,57 +29,84 @@
                     <div class="stat-card gray">
                         <span class="icon">📖</span>
                         <div>
-                            <p class="stat-num">3</p>
+                            <p class="stat-num">{{ cargando ? '...' : totalCursos }}</p>
                             <p class="stat-label">Total de cursos</p>
                         </div>
                     </div>
                     <div class="stat-card yellow">
                         <span class="icon">📊</span>
                         <div>
-                            <p class="stat-num">45%</p>
-                            <p class="stat-label">Completo</p>
+                            <p class="stat-num">{{ cargando ? '...' : promedioProgreso + '%' }}</p>
+                            <p class="stat-label">Progreso promedio</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="my-courses-list">
                     <h2 class="section-title">Tus cursos</h2>
+
+                    <!-- Loading state -->
+                    <div *ngIf="cargando" class="empty-courses">
+                        <span>Cargando tus cursos...</span>
+                    </div>
+
+                    <!-- Sin cursos inscritos -->
+                    <div *ngIf="!cargando && cursosActivos.length === 0" class="empty-courses">
+                        <p>Aún no estás inscrito en ningún curso.</p>
+                        <p>¡Explora los cursos disponibles e inscríbete!</p>
+                    </div>
+
+                    <!-- Lista de cursos inscritos -->
                     <div class="course-progress-card" *ngFor="let c of cursosActivos">
                         <div class="course-info">
                             <h3>{{ c.titulo }}</h3>
                             <div class="course-meta">
-                                <span>📄 2</span>
-                                <span>🕒 3h</span>
-                                <span>👤 1</span>
-                                <span class="lvl">{{ c.nivel }}</span>
+                                <span>📅 {{ c.fecha_inscripcion | date:'dd/MM/yyyy' }}</span>
+                                <span class="lvl">{{ c.nivel_recomendado }}</span>
+                                <span class="precio-badge">{{ c.es_gratuito ? 'Gratis' : '$' + c.precio }}</span>
                             </div>
                         </div>
                         <div class="progress-container">
                             <div class="progress-bar">
-                                <div class="progress-fill" [style.width.%]="c.progreso"></div>
+                                <div class="progress-fill" [style.width.%]="c.porcentaje_avance"></div>
                             </div>
-                            <span class="prog-text">{{ c.progreso }}%</span>
+                            <span class="prog-text">{{ c.porcentaje_avance }}%</span>
                         </div>
-                        <a href="javascript:void(0)" class="continue-link" (click)="goToCursos()">Continue Learning</a>
+                        <a href="javascript:void(0)" class="continue-link"
+                            (click)="goToCursoViewer(c.id_curso)">Continue Learning →</a>
                     </div>
                 </div>
             </section>
 
             <aside class="available-section">
                 <h2 class="section-title">Más cursos disponibles</h2>
-                <div class="available-grid">
+
+                <!-- Loading state -->
+                <div *ngIf="cargando" class="empty-courses">
+                    <span>Cargando cursos...</span>
+                </div>
+
+                <!-- Sin cursos disponibles -->
+                <div *ngIf="!cargando && cursosDisponibles.length === 0" class="empty-courses">
+                    <span>¡Ya estás inscrito en todos los cursos disponibles! 🎉</span>
+                </div>
+
+                <div class="available-grid" *ngIf="!cargando">
                     <div class="course-card-mini" *ngFor="let d of cursosDisponibles">
                         <div class="img-wrapper">
-                            <img [src]="d.img" alt="Course">
+                            <img src="assets/curso1.jpg" alt="Course">
                             <img src="assets/logo.png" class="badge">
                         </div>
                         <div class="mini-body">
                             <h4>{{ d.titulo }}</h4>
-                            <span class="lvl-tag">{{ d.nivel }}</span>
+                            <span class="lvl-tag">{{ d.nivel_recomendado }}</span>
                             <div class="mini-stats">
-                                <span>📄 2</span> <span>🕒 3h</span> <span>👤 1</span>
+                                <span>🕒 {{ d.es_gratuito ? 'Gratis' : '$' + d.precio }}</span>
                             </div>
-                            <a href="javascript:void(0)" class="start-link" (click)="goToCursos()">Start Learning</a>
+                            <button class="inscribirse-btn" (click)="inscribirse(d.id_curso)"
+                                [disabled]="inscribiendoCursoId === d.id_curso">
+                                {{ inscribiendoCursoId === d.id_curso ? 'Inscribiendo...' : 'Inscribirme' }}
+                            </button>
                         </div>
                     </div>
                 </div>

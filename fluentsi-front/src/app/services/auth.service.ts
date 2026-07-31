@@ -8,6 +8,7 @@ export interface StudentLoginResponse {
   userId: number;
   role: string;
   nombre: string;
+  ap_paterno?: string;
 }
 
 export interface StudentRegisterRequest {
@@ -96,7 +97,8 @@ export class AuthService {
     localStorage.setItem('user', JSON.stringify({
       userId: response.userId,
       role: response.role,
-      nombre: response.nombre
+      nombre: response.nombre,
+      ap_paterno: response.ap_paterno || ''
     }));
     this.isAuthenticatedSubject.next(true);
     this.userSubject.next(this.getStoredUser());

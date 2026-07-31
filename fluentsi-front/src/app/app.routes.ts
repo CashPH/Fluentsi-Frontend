@@ -23,6 +23,7 @@ export const routes: Routes = [
   { path: 'agenda', component: MyAgendaComponent, canActivate: [AuthGuard] },
   { path: 'student-dashboard', component: StudentDashboardComponent, canActivate: [AuthGuard] },
   { path: 'student-home', component: StudentDashboardComponent, canActivate: [AuthGuard] },
+  { path: 'curso/:id', component: CourseViewerComponent, canActivate: [AuthGuard] },
   { path: 'leccion', component: CourseViewerComponent, canActivate: [AuthGuard] },
   { path: 'quiz', component: QuizComponent, canActivate: [AuthGuard] },
   
