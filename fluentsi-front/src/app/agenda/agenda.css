@@ -58,7 +58,7 @@
 .main-content {
     flex: 1;
     background-color: #1712a4;
-    background-image: url('../../assets/fondo-manos.png');
+    background-image: url('../../../public/fondo-manos.png');
     background-size: cover;
     background-position: center;
     padding: 2rem 4rem;

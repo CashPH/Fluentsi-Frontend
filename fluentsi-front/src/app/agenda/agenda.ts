@@ -9,6 +9,14 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./agenda.css']
 })
 export class MyAgendaComponent {
+enviarRetroalimentacion() {
+throw new Error('Method not implemented.');
+}
+revisiones: any;
+revisionSeleccionada: any;
+seleccionarRevision(_t28: any) {
+throw new Error('Method not implemented.');
+}
   dias = [
     { nombre: 'Lunes 08', activo: true },
     { nombre: 'Martes 09', activo: false },

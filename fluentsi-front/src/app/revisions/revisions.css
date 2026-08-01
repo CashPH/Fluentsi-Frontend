@@ -8,9 +8,10 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    font-family: sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* NAVBAR */
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -55,107 +56,193 @@
     margin-top: 40px;
 }
 
+/* MAIN BACKGROUND */
 .main-content {
     flex: 1;
     background-color: #1712a4;
-    background-image: url('/fluentsi-front/public/fondo-manos.png');
+    background-image: url('/fondo-manos.png');
     background-size: cover;
     background-position: center;
-    padding: 3rem;
+    padding: 3rem 4rem;
 }
 
-.panel-container {
-    background-color: #a7a6e6;
-    border-radius: 15px;
-    padding: 2rem;
-    width: 60%;
-    min-width: 550px;
-}
-
-.search-container {
+/* REVISIONS LAYOUT */
+.revisions-layout {
     display: flex;
-    justify-content: flex-end;
-    margin-bottom: 2rem;
+    gap: 2rem;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.revisions-panel {
+    background-color: #989adb;
+    border-radius: 24px;
+    padding: 2rem;
+    flex: 1;
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.filters-bar {
+    display: flex;
+    gap: 1rem;
+    align-items: center; ;
+    justify-content: center;
+    width: 100%;
+}
+
+.filter-select {
+    background-color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    padding: 0.6rem 1.2rem;
+    font-weight: bold;
+    color: #4b5563;
+    font-size: 0.88rem;
+    outline: none;
+    cursor: pointer;
 }
 
 .search-input-wrapper {
-    background: #d1d5db;
+    background-color: #ffffff;
     border-radius: 20px;
     display: flex;
     align-items: center;
-    padding: 0.5rem 1rem;
-    width: 250px;
+    padding: 0.4rem 1rem;
+    width: 220px;
+    gap: 0.5rem;
+}
+
+.search-icon {
+    font-size: 0.85rem;
+    color: #6b7280;
 }
 
 .search-input-wrapper input {
     border: none;
-    background: transparent;
     outline: none;
+    background: transparent;
     width: 100%;
-    margin-left: 0.5rem;
+    color: #000000;
+    font-size: 0.9rem;
 }
 
-.revisions-list {
+.items-list {
     display: flex;
     flex-direction: column;
     gap: 1.2rem;
 }
 
-.revision-card {
+.item-card {
     background-color: #ffffff;
-    border-radius: 15px;
+    border-radius: 20px;
+    padding: 1.2rem 1.5rem;
     display: flex;
     align-items: center;
-    padding: 0.6rem;
     gap: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .student-img {
-    width: 85px;
-    height: 85px;
-    border-radius: 12px;
+    width: 70px;
+    height: 70px;
+    border-radius: 14px;
     object-fit: cover;
+    background-color: #e5e7eb;
 }
 
 .card-info {
     flex: 1;
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: 0.6rem;
+    color: #000000;
 }
 
 .card-info h4 {
     font-size: 1.1rem;
-    color: #000;
-    margin: 0;
-}
-
-.card-info h4 span {
-    font-weight: 400;
-    color: #333;
+    font-weight: bold;
 }
 
 .level-badge {
     background-color: #4ade80;
-    color: #000;
-    font-weight: bold;
-    font-size: 0.8rem;
-    padding: 0.3rem 1.2rem;
-    border-radius: 15px;
-    align-self: flex-start;
+    color: #000000;
+    font-weight: 800;
+    padding: 0.2rem 1rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
 }
 
 .check-btn {
     background-color: #fdf04b;
-    border: 1px solid #000;
-    padding: 0.6rem 1.2rem;
+    border: 1.5px solid #000000;
     border-radius: 20px;
+    padding: 0.65rem 1.4rem;
     font-weight: bold;
+    font-size: 0.9rem;
+    color: #000000;
     cursor: pointer;
-    margin-right: 1rem;
-    transition: transform 0.1s;
 }
 
-.check-btn:hover {
-    transform: scale(1.05);
+/* FEEDBACK PANEL */
+.feedback-panel {
+    background-color: #989adb;
+    border-radius: 24px;
+    padding: 2rem;
+    width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.feedback-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.feedback-group label {
+    font-weight: bold;
+    font-size: 1rem;
+    color: #000000;
+}
+
+.read-only-box {
+    background-color: #ffffff;
+    border-radius: 14px;
+    padding: 1rem;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    color: #1f2937;
+    font-size: 0.92rem;
+}
+
+.feedback-input {
+    background-color: #ffffff;
+    border-radius: 14px;
+    border: none;
+    padding: 1rem;
+    font-family: inherit;
+    font-size: 0.92rem;
+    resize: none;
+    outline: none;
+    color: #000000;
+}
+
+.send-btn {
+    background-color: #fdf04b;
+    border: 1.5px solid #000000;
+    border-radius: 20px;
+    padding: 0.85rem 1.5rem;
+    font-weight: bold;
+    font-size: 0.95rem;
+    color: #000000;
+    cursor: pointer;
+    width: 100%;
 }

@@ -1,7 +1,8 @@
 <div class="revisions-container">
+    <!-- NAVBAR -->
     <nav class="navbar">
         <div class="nav-left">
-            <img src="assets/logo.png" alt="Logo" class="logo" />
+            <img src="/logo.png" alt="Logo" class="logo">
             <ul class="nav-links">
                 <li><a href="#">Inicio</a></li>
                 <li><a href="#">Mi agenda</a></li>
@@ -9,30 +10,79 @@
                 <li><a href="#" class="active">Revisiones</a></li>
             </ul>
         </div>
-        <img src="assets/monito.png" alt="Mascot" class="nav-mascot" />
+        <img src="/monito.png" alt="Mascot" class="nav-mascot">
     </nav>
 
     <main class="main-content">
-        <div class="panel-container">
-            <div class="search-container">
-                <div class="search-input-wrapper">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" placeholder="Busca" />
+        <div class="revisions-layout">
+
+        
+            <div class="revisions-panel">
+                
+                <div class="filters-bar">
+                    <select class="filter-select">
+                        <option value="">Tipo (Exámenes)</option>
+                         <option value="">Tipo (Tarea)</option>
+                    </select>
+
+                    <select class="filter-select">
+                        <option value="">Alumno</option>
+                    </select>
+
+                    <div class="search-input-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" placeholder="Busca">
+                    </div>
                 </div>
+
+              
+                <div class="items-list">
+                    <div class="item-card" *ngFor="let item of revisiones">
+                        <img [src]="item.img" alt="Alumna" class="student-img">
+                        <div class="card-info">
+                            <h4>{{ item.nombre }} - {{ item.tipo }}</h4>
+                            <span class="level-badge" [ngClass]="{
+                                'level-b2': item.nivel === 'B2',
+                                'level-a1': item.nivel === 'A1',
+                                'level-a2': item.nivel === 'A2'
+                            }">{{ item.nivel }}</span>
+                        </div>
+                        <button class="check-btn" (click)="seleccionarRevision(item)">
+                            Check Answers
+                        </button>
+                    </div>
+                </div>
+
             </div>
 
-            <div class="revisions-list">
-                <div class="revision-card" *ngFor="let rev of revisiones">
-                    <img [src]="rev.img" alt="Alumna" class="student-img" />
-                    <div class="card-info">
-                        <h4>
-                            {{ rev.nombre }} - <span>{{ rev.tipo }}</span>
-                        </h4>
-                        <span class="level-badge">{{ rev.nivel }}</span>
+
+            <div class="feedback-panel" *ngIf="revisionSeleccionada">
+                
+                <div class="feedback-group">
+                    <label>Pregunta del examen</label>
+                    <div class="read-only-box">
+                        {{ revisionSeleccionada?.pregunta }}
                     </div>
-                    <button class="check-btn">Check Answers</button>
                 </div>
+
+                <div class="feedback-group">
+                    <label>Respuesta del alumno</label>
+                    <div class="read-only-box">
+                        {{ revisionSeleccionada?.respuesta }}
+                    </div>
+                </div>
+
+                <div class="feedback-group">
+                    <label>Caja de Feedback</label>
+                    <textarea class="feedback-input" rows="4" placeholder="Escribe tu retroalimentación..."></textarea>
+                </div>
+
+                <button class="send-btn" (click)="enviarRetroalimentacion()">
+                    Enviar Retroalimentación
+                </button>
+
             </div>
+
         </div>
     </main>
 </div>

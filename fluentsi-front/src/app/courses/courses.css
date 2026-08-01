@@ -58,9 +58,10 @@
 .main-content {
     flex: 1;
     background-color: #1712a4;
-    background-image: url('/fluentsi-front/public/logo.png');
+    background-image: url('/fondo-manos.png'); /* <-- Directo desde la raíz */
     background-size: cover;
     background-position: center;
+    background-repeat: no-repeat; /* Es bueno agregar esto para evitar repeticiones */
     padding: 2rem 3rem;
 }
 
@@ -69,7 +70,7 @@
 }
 
 .search-input-wrapper {
-    background: #d1d5db;
+    background: #ffff;
     border-radius: 25px;
     display: inline-flex;
     align-items: center;
@@ -77,6 +78,14 @@
     width: 350px;
 }
 
+.search-input-wrapper input {
+    color: #000;
+}
+
+.search-input-wrapper input::placeholder {
+    color: #000;
+    opacity: 0.85; 
+}
 .search-icon {
     margin-right: 10px;
 }
@@ -96,7 +105,7 @@
 }
 
 .sidebar {
-    background-color: #d1d5db;
+    background-color: #9396db;
     padding: 1.5rem;
     border-radius: 12px;
     width: 220px;
@@ -152,14 +161,15 @@
     position: absolute;
     bottom: -20px;
     right: 15px;
-    height: 55px;
+    height: 45px;
     width: 55px;
     background-color: #000;
     border-radius: 50%;
-    padding: 5px;
-    object-fit: contain;
+    
+    /* CAMBIOS AQUÍ */
+    padding: 0;           /* 1. Elimina el relleno interno para que la imagen toque los bordes */
+    object-fit: cover;    /* 2. Rellena todo el círculo completamente */
 }
-
 .card-body {
     padding: 1.8rem 1.5rem 1.5rem 1.5rem;
     display: flex;

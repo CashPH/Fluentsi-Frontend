@@ -68,7 +68,7 @@
 .main-content {
     flex: 1;
     background-color: #1712a4;
-    background-image: url('/fluentsi-front/public/fondo-manos.png');
+    background-image: url('/fondo-manos.png');
     background-size: cover;
     padding: 2rem 4rem;
     color: #fff;
