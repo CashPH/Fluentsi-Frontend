@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import bcrypt from 'bcryptjs'; // Asegúrate de tener este import para la encriptación
 
 import authRouter from './routes/auth';
 import { verifyToken } from './middleware/auth';
@@ -426,7 +427,7 @@ app.get('/api/admin/administradores', async (req: Request, res: Response): Promi
   try {
     // Agregamos 'privilegios' a la consulta
     const [rows] = await pool.execute(
-      'SELECT id_admin, nombre, usuario AS correo, privilegios, 1 AS activo FROM administradores ORDER BY id_admin DESC'
+      'SELECT id_admin, nombre, ap_paterno, ap_materno, usuario AS correo, correo_recuperacion, privilegios, 1 AS activo FROM administradores ORDER BY id_admin DESC'
     );
     res.json({ success: true, data: rows });
   } catch (error) {
@@ -437,10 +438,25 @@ app.get('/api/admin/administradores', async (req: Request, res: Response): Promi
 
 app.post('/api/admin/administradores', async (req: Request, res: Response): Promise<any> => {
   try {
-    const { nombre, correo, password, privilegios } = req.body;
-    // Insertamos el valor real de privilegios
-    const query = `INSERT INTO administradores (nombre, ap_paterno, usuario, password, privilegios) VALUES (?, 'N/A', ?, ?, ?)`;
-    const [result] = await pool.execute(query, [nombre, correo, password || '123456', privilegios]);
+    const { nombre, ap_paterno, ap_materno, correo, correo_recuperacion, password, privilegios } = req.body;
+    
+    // ENCRIPTAMOS LA CONTRASEÑA ANTES DE GUARDARLA
+    const salt = await bcrypt.genSalt(10);
+    const hashed = await bcrypt.hash(password || '123456', salt);
+
+    // Aseguramos que los privilegios se guarden como string JSON
+    const privilegiosJSON = typeof privilegios === 'object' ? JSON.stringify(privilegios) : privilegios;
+
+    const query = `INSERT INTO administradores (nombre, ap_paterno, ap_materno, usuario, correo_recuperacion, password, privilegios) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    const [result] = await pool.execute(query, [
+      nombre, 
+      ap_paterno, 
+      ap_materno || null, 
+      correo, 
+      correo_recuperacion || null, 
+      hashed, // AQUI MANDAMOS LA CONTRASEÑA YA ENCRIPTADA
+      privilegiosJSON
+    ]);
 
     res.status(201).json({ success: true, id_admin: (result as any).insertId });
   } catch (error) {
@@ -452,12 +468,31 @@ app.post('/api/admin/administradores', async (req: Request, res: Response): Prom
 app.put('/api/admin/administradores/:id', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    const { nombre, correo, privilegios } = req.body;
-    // Actualizamos también los privilegios
-    await pool.execute('UPDATE administradores SET nombre = ?, usuario = ?, privilegios = ? WHERE id_admin = ?', [nombre, correo, privilegios, id]);
-    res.json({ success: true, mensaje: 'Admin actualizado' });
+    const { nombre, ap_paterno, ap_materno, correo, correo_recuperacion, privilegios, password } = req.body;
+    
+    // Aseguramos que los privilegios se guarden como string JSON
+    const privilegiosJSON = typeof privilegios === 'object' ? JSON.stringify(privilegios) : privilegios;
+
+    // Si escribiste una contraseña en el panel, la encriptamos y la guardamos
+    if (password && password.trim() !== '') {
+      const salt = await bcrypt.genSalt(10);
+      const hashed = await bcrypt.hash(password, salt);
+
+      await pool.execute(
+        'UPDATE administradores SET nombre = ?, ap_paterno = ?, ap_materno = ?, usuario = ?, correo_recuperacion = ?, privilegios = ?, password = ? WHERE id_admin = ?', 
+        [nombre, ap_paterno, ap_materno || null, correo, correo_recuperacion || null, privilegiosJSON, hashed, id]
+      );
+    } else {
+      // Si dejaste la contraseña en blanco, actualiza todo MENOS la contraseña
+      await pool.execute(
+        'UPDATE administradores SET nombre = ?, ap_paterno = ?, ap_materno = ?, usuario = ?, correo_recuperacion = ?, privilegios = ? WHERE id_admin = ?', 
+        [nombre, ap_paterno, ap_materno || null, correo, correo_recuperacion || null, privilegiosJSON, id]
+      );
+    }
+    
+    res.json({ success: true, mensaje: 'Admin actualizado correctamente' });
   } catch (error) {
-    console.error('ERROR SQL:', error);
+    console.error('ERROR SQL AL EDITAR:', error);
     res.status(500).json({ error: 'Error al actualizar administrador' });
   }
 });

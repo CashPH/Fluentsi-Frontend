@@ -19,7 +19,22 @@ export class AdministradoresAdminComponent implements OnInit {
   modoEdicion: boolean = false;
   idSeleccionado: number = 0;
 
-  nuevoAdmin: any = { nombre: '', correo: '', password: '', privilegios: 1 };
+  nuevoAdmin: any = { 
+    nombre: '', 
+    ap_paterno: '', 
+    ap_materno: '', 
+    correo: '', 
+    correo_recuperacion: '', 
+    password: '', 
+    privilegios: {
+      inicio: true,
+      instructores: false,
+      asignaciones: false,
+      agenda: false,
+      administradores: false,
+      prospectos: false
+    } 
+  };
 
   ngOnInit() {
     this.cargarAdministradores();
@@ -29,7 +44,14 @@ export class AdministradoresAdminComponent implements OnInit {
     this.dashboardService.getAdministradores().subscribe({
       next: (response) => {
         if (response.success) {
-          this.administradores = response.data;
+          this.administradores = response.data.map((admin: any) => {
+            // Nos aseguramos de que los privilegios sean un objeto y no un string
+            if (typeof admin.privilegios === 'string') {
+              try { admin.privilegios = JSON.parse(admin.privilegios); } 
+              catch (e) { admin.privilegios = {}; }
+            }
+            return admin;
+          });
           this.cdr.detectChanges();
         }
       },
@@ -37,16 +59,36 @@ export class AdministradoresAdminComponent implements OnInit {
     });
   }
 
-abrirModalNuevo() {
+  abrirModalNuevo() {
     this.modoEdicion = false;
-    this.nuevoAdmin = { nombre: '', correo: '', password: '', privilegios: 1 };
+    this.nuevoAdmin = { 
+      nombre: '', 
+      ap_paterno: '', 
+      ap_materno: '', 
+      correo: '', 
+      correo_recuperacion: '', 
+      password: '', 
+      privilegios: {
+        inicio: true,
+        instructores: false,
+        asignaciones: false,
+        agenda: false,
+        administradores: false,
+        prospectos: false
+      } 
+    };
     this.mostrarModal = true;
   }
 
   abrirModalEditar(admin: any) {
     this.modoEdicion = true;
     this.idSeleccionado = admin.id_admin;
-    this.nuevoAdmin = { ...admin, password: '' }; 
+    // Hacemos una copia profunda de los privilegios para no mutar la tabla antes de guardar
+    this.nuevoAdmin = { 
+      ...admin, 
+      password: '',
+      privilegios: { ...admin.privilegios } 
+    }; 
     this.mostrarModal = true;
   }
 
@@ -55,8 +97,8 @@ abrirModalNuevo() {
   }
 
   guardarAdministrador() {
-    if (!this.nuevoAdmin.nombre || !this.nuevoAdmin.correo) {
-      alert('Nombre y Correo son obligatorios.');
+    if (!this.nuevoAdmin.nombre || !this.nuevoAdmin.ap_paterno || !this.nuevoAdmin.correo) {
+      alert('Nombre, Apellido Paterno y Correo (Usuario) son obligatorios.');
       return;
     }
 
