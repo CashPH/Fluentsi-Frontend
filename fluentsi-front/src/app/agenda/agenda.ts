@@ -1,14 +1,14 @@
-import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../services/auth.service';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-genda',
+  selector: 'app-agenda',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, HttpClientModule, RouterModule],
   templateUrl: './agenda.html',
   styleUrls: ['./agenda.css']
 })

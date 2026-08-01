@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-revisions',
@@ -10,6 +11,9 @@ import { RouterLink } from '@angular/router';
   styleUrls: ['./revisions.css']
 })
 export class RevisionsComponent {
+  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
+
   revisionSeleccionada: any = null;
 
   revisiones = [
@@ -34,5 +38,10 @@ export class RevisionsComponent {
   enviarRetroalimentacion() {
     alert('Retroalimentación enviada con éxito');
     this.revisionSeleccionada = null; 
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

@@ -3,14 +3,18 @@
     <nav class="navbar">
         <div class="nav-left">
             <img src="/logo.png" alt="Logo" class="logo">
-             <ul class="nav-links">
-               <li><a routerLink="/teacher-home">Inicio</a></li>
-               <li><a routerLink="/agenda">Mi agenda</a></li>
-               <li><a routerLink="/cursos">Cursos</a></li>
-               <li><a routerLink="/revisiones" class="active">Revisiones</a></li>
-             </ul>
+            <ul class="nav-links">
+                <li><a routerLink="/teacher-home">Inicio</a></li>
+                <li><a routerLink="/agenda">Mi agenda</a></li>
+                <li><a routerLink="/cursos">Cursos</a></li>
+                <li><a routerLink="/revisiones" class="active">Revisiones</a></li>
+            </ul>
         </div>
-        <img src="/monito.png" alt="Mascot" class="nav-mascot">
+
+        <div class="nav-right">
+            <button class="logout-btn" (click)="logout()">Log out 🚪</button>
+            <img src="monito.png" alt="Mascot" class="nav-mascot">
+        </div>
     </nav>
 
     <main class="main-content">
