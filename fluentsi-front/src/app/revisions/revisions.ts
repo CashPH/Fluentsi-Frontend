@@ -17,14 +17,18 @@ export class RevisionsComponent {
     { nombre: '<Nombre Alumna>', tipo: 'Grammar Test', nivel: 'A1', img: '/monit.png' },
     { nombre: '<Nombre Alumna>', tipo: 'Writing Task', nivel: 'A2', img: '/monit.png' }
   ];
-items: any;
 
   seleccionarRevision(item: any) {
-    this.revisionSeleccionada = {
-      ...item,
-      pregunta: '¿Cuál es la conjugación correcta del verbo to be en pasado?',
-      respuesta: 'They was playing soccer yesterday.'
-    };
+
+    if (this.revisionSeleccionada && this.revisionSeleccionada.tipo === item.tipo) {
+      this.revisionSeleccionada = null; 
+    } else {
+      this.revisionSeleccionada = {    
+        ...item,
+        pregunta: '¿Cuál es la conjugación correcta del verbo to be en pasado?',
+        respuesta: 'They was playing soccer yesterday.'
+      };
+    }
   }
 
   enviarRetroalimentacion() {

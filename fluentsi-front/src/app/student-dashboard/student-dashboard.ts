@@ -13,6 +13,12 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./student-dashboard.css']
 })
 export class StudentDashboardComponent implements OnInit, OnDestroy {
+goToAgenda() {
+throw new Error('Method not implemented.');
+}
+goToRevisions() {
+throw new Error('Method not implemented.');
+}
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
 
