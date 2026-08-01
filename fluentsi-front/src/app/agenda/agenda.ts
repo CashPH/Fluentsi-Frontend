@@ -12,22 +12,19 @@ import { Subscription } from 'rxjs';
   templateUrl: './agenda.html',
   styleUrls: ['./agenda.css']
 })
-export class MyAgendaComponent {
-enviarRetroalimentacion() {
-throw new Error('Method not implemented.');
-}
-revisiones: any;
-revisionSeleccionada: any;
-seleccionarRevision(_t28: any) {
-throw new Error('Method not implemented.');
-}
-  dias = [
-    { nombre: 'Lunes 08', activo: true },
-    { nombre: 'Martes 09', activo: false },
-    { nombre: 'Miercoles 10', activo: false },
-    { nombre: 'Jueves 11', activo: false },
-    { nombre: 'Viernes 12', activo: false }
-  ];
+export class MyAgendaComponent implements OnInit, OnDestroy {
+  enviarRetroalimentacion() {
+    throw new Error('Method not implemented.');
+  }
+  
+  revisiones: any;
+  revisionSeleccionada: any;
+  
+  seleccionarRevision(_t28: any) {
+    throw new Error('Method not implemented.');
+  }
+
+  // Se eliminó el arreglo "dias" duplicado y estático que causaba conflictos con el HTML
 
   private userSub: Subscription | null = null;
   private readonly API = 'http://localhost:4000/api';
@@ -37,6 +34,8 @@ throw new Error('Method not implemented.');
 
   // Semana actual
   semanaInicio: Date = this.getLunes(new Date());
+  
+  // Única declaración de 'dias' con la interfaz correcta
   dias: { fecha: Date; label: string; activo: boolean }[] = [];
 
   // Día seleccionado
@@ -45,7 +44,12 @@ throw new Error('Method not implemented.');
   // Sesiones del día seleccionado
   todasSesiones: any[] = [];
 
-  constructor(private authService: AuthService) { }
+  // Se inyectaron HttpClient y ChangeDetectorRef aquí
+  constructor(
+    private authService: AuthService,
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
     this.userSub = this.authService.user$.subscribe(user => {
@@ -100,7 +104,8 @@ throw new Error('Method not implemented.');
 
     this.cargando = true;
     this.http.get<any[]>(`${this.API}/teacher/${this.teacherId}/sesiones?fecha_inicio=${fi}&fecha_fin=${ff}`).subscribe({
-      next: (data) => {
+      // Se agregó el tipado explícito (data: any[]) para corregir el TS7006
+      next: (data: any[]) => {
         this.todasSesiones = Array.isArray(data) ? data : [];
         this.cargando = false;
         this.cdr.detectChanges();
