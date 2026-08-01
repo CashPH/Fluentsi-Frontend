@@ -1,12 +1,12 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core'; // 1. Importamos ChangeDetectorRef
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterLink, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-courses',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, RouterLink],
   templateUrl: './courses.html',
   styleUrl: './courses.css',
 })
