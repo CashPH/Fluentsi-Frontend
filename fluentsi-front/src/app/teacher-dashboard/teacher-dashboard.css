@@ -27,7 +27,7 @@
 }
 
 .logo {
-    height: 45px;
+    height: 50px;
 }
 
 .nav-links {
@@ -66,14 +66,14 @@
 }
 
 .nav-mascot {
-    height: 120px;
-    margin-top: 40px;
+    height: 135px;
+    margin-top: 0px;
 }
 
 .main-content {
     flex: 1;
     background-color: #1712a4;
-    background-image: url('/fluentsi-front/public/fondo-manos.png');
+    background-image: url('/fondo-manos.png');
     background-size: cover;
     background-position: center;
     padding: 2rem 4rem;
