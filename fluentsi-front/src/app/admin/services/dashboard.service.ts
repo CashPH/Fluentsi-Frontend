@@ -59,4 +59,52 @@ export class DashboardService {
     return this.http.delete(`http://localhost:4000/api/admin/administradores/${id}`);
   }
 
+  // ==========================================
+  // MÉTODOS PARA ASIGNACIONES
+  // ==========================================
+  private asignacionesUrl = 'http://localhost:4000/api/admin/asignaciones';
+
+  getAsignaciones(): Observable<any> {
+    return this.http.get(this.asignacionesUrl);
+  }
+
+  getAlumnosDeInstructor(idInstructor: number): Observable<any> {
+    return this.http.get(`${this.asignacionesUrl}/instructor/${idInstructor}`);
+  }
+
+  crearAsignacion(datos: { id_instructor: number; id_estudiante: number }): Observable<any> {
+    return this.http.post(this.asignacionesUrl, datos);
+  }
+
+  eliminarAsignacion(id: number): Observable<any> {
+    return this.http.delete(`${this.asignacionesUrl}/${id}`);
+  }
+
+  // ==========================================
+  // MÉTODOS PARA SESIONES DE CLASE
+  // ==========================================
+  private sesionesUrl = 'http://localhost:4000/api/admin/sesiones';
+
+  getSesiones(): Observable<any> {
+    return this.http.get(this.sesionesUrl);
+  }
+
+  crearSesion(datos: any): Observable<any> {
+    return this.http.post(this.sesionesUrl, datos);
+  }
+
+  actualizarSesion(id: number, datos: any): Observable<any> {
+    return this.http.put(`${this.sesionesUrl}/${id}`, datos);
+  }
+
+  cancelarSesion(id: number): Observable<any> {
+    return this.http.delete(`${this.sesionesUrl}/${id}`);
+  }
+
+  // ==========================================
+  // MÉTODOS PARA ESTUDIANTES (necesario para dropdowns)
+  // ==========================================
+  getEstudiantes(): Observable<any> {
+    return this.http.get('http://localhost:4000/api/admin/estudiantes');
+  }
 }

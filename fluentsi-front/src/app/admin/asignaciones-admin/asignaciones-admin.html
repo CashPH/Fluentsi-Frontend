@@ -1,0 +1,100 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1>Asignaciones de Alumnos</h1>
+      <p class="subtitle">Asigna alumnos a instructores para su seguimiento personalizado</p>
+    </div>
+    <button class="btn-primary" (click)="abrirModal()">
+      + Nueva Asignación
+    </button>
+  </div>
+
+  <!-- Mensaje de éxito -->
+  <div class="alert-success" *ngIf="mensajeExito">{{ mensajeExito }}</div>
+
+  <!-- Cargando -->
+  <div class="loading-state" *ngIf="cargando">
+    <p>Cargando asignaciones...</p>
+  </div>
+
+  <!-- Sin instructores -->
+  <div class="empty-state" *ngIf="!cargando && instructores.length === 0">
+    <p>No hay instructores registrados. Primero crea instructores en la sección "Instructores".</p>
+  </div>
+
+  <!-- Tarjetas por instructor -->
+  <div class="instructores-grid" *ngIf="!cargando && instructores.length > 0">
+    <div class="instructor-card" *ngFor="let inst of instructoresConAlumnos">
+      <div class="instructor-card-header">
+        <div class="instructor-avatar">
+          {{ inst.nombre?.charAt(0) }}{{ inst.ap_paterno?.charAt(0) }}
+        </div>
+        <div>
+          <h3>{{ inst.nombre }} {{ inst.ap_paterno }}</h3>
+          <span class="badge">{{ inst.alumnos.length }} alumno{{ inst.alumnos.length !== 1 ? 's' : '' }}</span>
+        </div>
+      </div>
+
+      <!-- Lista de alumnos asignados -->
+      <div class="alumno-list">
+        <div class="alumno-row" *ngFor="let a of inst.alumnos">
+          <div class="alumno-info">
+            <span class="alumno-nombre">{{ a.nombre_alumno }} {{ a.ap_alumno }}</span>
+            <span class="alumno-correo">{{ a.correo }}</span>
+          </div>
+          <button class="btn-icon-danger" title="Desasignar"
+            (click)="eliminarAsignacion(a.id_asignacion, a.nombre_alumno + ' ' + a.ap_alumno)">
+            ✕
+          </button>
+        </div>
+
+        <div class="alumno-empty" *ngIf="inst.alumnos.length === 0">
+          <span>Sin alumnos asignados</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nueva Asignación -->
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Nueva Asignación</h2>
+      <button class="modal-close" (click)="cerrarModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Instructor</label>
+        <select [(ngModel)]="nuevaAsignacion.id_instructor" id="select-instructor">
+          <option [value]="0">— Selecciona un instructor —</option>
+          <option *ngFor="let i of instructores" [value]="i.id_instructor">
+            {{ i.nombre }} {{ i.ap_paterno }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Alumno</label>
+        <select [(ngModel)]="nuevaAsignacion.id_estudiante" id="select-alumno">
+          <option [value]="0">— Selecciona un alumno —</option>
+          <option *ngFor="let e of estudiantesDisponibles" [value]="e.id_estudiante">
+            {{ e.nombre }} {{ e.ap_paterno }} — {{ e.correo }}
+          </option>
+        </select>
+        <small *ngIf="nuevaAsignacion.id_instructor && estudiantesDisponibles.length === 0"
+          style="color: #f39c12;">
+          Todos los alumnos ya están asignados a este instructor.
+        </small>
+      </div>
+
+      <div class="alert-error" *ngIf="mensajeError">{{ mensajeError }}</div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
+      <button class="btn-primary" (click)="guardarAsignacion()">Asignar</button>
+    </div>
+  </div>
+</div>

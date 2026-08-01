@@ -16,7 +16,9 @@
     </nav>
 
     <main class="main-content">
-        <h1 class="welcome-title">Bienvenido &lt;Nombre Instructor&gt;</h1>
+        <h1 class="welcome-title">
+            Bienvenido {{ nombreProfesor || 'Instructor' }}
+        </h1>
 
         <div class="dashboard-layout">
             <aside class="side-panel">
@@ -25,7 +27,7 @@
                 <div class="stat-card gray-card">
                     <div class="stat-header">
                         <span class="icon">👤</span>
-                        <span class="number">8</span>
+                        <span class="number">{{ cargando ? '...' : alumnosAsignados }}</span>
                     </div>
                     <p>Alumnos Asignados</p>
                 </div>
@@ -33,9 +35,9 @@
                 <div class="stat-card yellow-card">
                     <div class="stat-header">
                         <span class="icon">📅</span>
-                        <span class="number">4</span>
+                        <span class="number">{{ cargando ? '...' : sesionesPendientes }}</span>
                     </div>
-                    <p>Por revisar</p>
+                    <p>Sesiones esta semana</p>
                 </div>
             </aside>
 
@@ -45,17 +47,30 @@
                         <h3>Siguiente Sesión</h3>
                     </div>
 
-                    <div class="session-body">
+                    <!-- Sin sesión programada -->
+                    <div class="session-body" *ngIf="!cargando && !proximaSesion">
+                        <p style="color: #888; font-style: italic; padding: 16px;">
+                            No hay sesiones programadas próximamente.
+                        </p>
+                    </div>
+
+                    <!-- Cargando -->
+                    <div class="session-body" *ngIf="cargando">
+                        <p style="color: #aaa; padding: 16px;">Cargando...</p>
+                    </div>
+
+                    <!-- Próxima sesión real -->
+                    <div class="session-body" *ngIf="!cargando && proximaSesion">
                         <img src="assets/alumna.jpg" alt="Alumna" class="student-avatar" />
 
                         <div class="session-info">
-                            <h2>Clase con &lt;Nombre Alumna&gt;</h2>
-                            <p class="objective">Objetivo: Entrevista</p>
-                            <span class="level-badge">B2</span>
+                            <h2>Clase con {{ proximaSesion.nombre_alumno || 'Alumno' }}</h2>
+                            <p class="objective">Objetivo: {{ proximaSesion.objetivo || 'General' }}</p>
+                            <span class="level-badge">{{ proximaSesion.nivel || 'N/A' }}</span>
                         </div>
 
                         <div class="session-actions">
-                            <span class="clock-icon">⏰</span>
+                            <span class="clock-icon">⏰ {{ proximaSesion.hora || '' }}</span>
                             <button class="start-btn">Iniciar Sesión</button>
                         </div>
                     </div>
@@ -64,7 +79,7 @@
                 <div class="quick-access-section">
                     <h3 class="quick-title">Accesos Rápidos</h3>
                     <div class="quick-cards-container">
-                        <div class="quick-card">
+                        <div class="quick-card" routerLink="/agenda" style="cursor: pointer;">
                             <h4>Agenda Semanal</h4>
                             <div class="quick-card-bottom">
                                 <span class="arrow">→</span>
@@ -79,7 +94,7 @@
                             </div>
                         </div>
 
-                        <div class="quick-card">
+                        <div class="quick-card" routerLink="/revisiones" style="cursor: pointer;">
                             <h4>Evaluaciones</h4>
                             <div class="quick-card-bottom">
                                 <span class="arrow">→</span>
@@ -91,4 +106,4 @@
             </section>
         </div>
     </main>
-</div>
+</div>

@@ -15,9 +15,8 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>Nombre</th>
+          <th>Nombre Completo</th>
           <th>Correo Electrónico</th>
-          
           <th>Rol</th>
           <th>Estado</th>
           <th>Acciones</th>
@@ -26,13 +25,12 @@
       <tbody>
         <tr *ngFor="let admin of administradores">
           <td>#{{ admin.id_admin }}</td>
-          <td>{{ admin.nombre }}</td>
+          <td>{{ admin.nombre }} {{ admin.ap_paterno }}</td>
           <td>{{ admin.correo }}</td>
           
-          
           <td>
-            <span style="font-weight: 600; color: #4a5568;">
-              {{ admin.privilegios == 1 ? 'Super Admin' : (admin.privilegios == 2 ? 'Moderador' : 'Lector') }}
+            <span style="font-weight: 600; color: #4a5568; font-size: 0.85rem; background: #e2e8f0; padding: 4px 8px; border-radius: 6px;">
+              Personalizados ⚙️
             </span>
           </td>
 
@@ -47,7 +45,6 @@
           </td>
         </tr>
         <tr *ngIf="administradores.length === 0">
-          
           <td colspan="6" class="text-center">No hay administradores registrados.</td>
         </tr>
       </tbody>
@@ -55,32 +52,63 @@
   </div>
 
   <div class="modal-overlay" *ngIf="mostrarModal">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 650px;">
       <h2>{{ modoEdicion ? 'Editar Administrador' : 'Registrar Nuevo Administrador' }}</h2>
       <p style="color: #718096; margin-bottom: 20px;">Datos de acceso al sistema.</p>
       
       <div class="form-grid">
-        <div class="form-group full-width">
-          <label>Nombre Completo *</label>
+        <div class="form-group">
+          <label>Nombre *</label>
           <input type="text" class="form-control" [(ngModel)]="nuevoAdmin.nombre" placeholder="Ej. Luis">
         </div>
-        <div class="form-group full-width">
-          <label>Correo Electrónico *</label>
+        <div class="form-group">
+          <label>Apellido Paterno *</label>
+          <input type="text" class="form-control" [(ngModel)]="nuevoAdmin.ap_paterno" placeholder="Ej. Palacio">
+        </div>
+        <div class="form-group">
+          <label>Apellido Materno</label>
+          <input type="text" class="form-control" [(ngModel)]="nuevoAdmin.ap_materno" placeholder="Opcional">
+        </div>
+        <div class="form-group">
+          <label>Correo Electrónico (Usuario) *</label>
           <input type="email" class="form-control" [(ngModel)]="nuevoAdmin.correo" placeholder="admin@fluentsi.com">
         </div>
-        <div class="form-group full-width" *ngIf="!modoEdicion">
+        <div class="form-group">
+          <label>Correo de Recuperación</label>
+          <input type="email" class="form-control" [(ngModel)]="nuevoAdmin.correo_recuperacion" placeholder="Opcional">
+        </div>
+
+        <!-- SE CORRIGIÓ AQUÍ: Ya no tiene el *ngIf, así que siempre se muestra -->
+        <div class="form-group">
           <label>Contraseña *</label>
-          <input type="password" class="form-control" [(ngModel)]="nuevoAdmin.password" placeholder="Mínimo 6 caracteres">
+          <input type="password" class="form-control" [(ngModel)]="nuevoAdmin.password" placeholder="Escribe para cambiar (Mín. 6) o deja en blanco">
         </div>
         
-        
-        <div class="form-group full-width">
-          <label>Nivel de Privilegios *</label>
-          <select class="form-control" [(ngModel)]="nuevoAdmin.privilegios">
-            <option [value]="1">Super Administrador (Control Total)</option>
-            <option [value]="2">Moderador (Solo ver / editar algunas cosas)</option>
-            <option [value]="3">Lector (Solo lectura)</option>
-          </select>
+        <!-- SECCIÓN DE PERMISOS GRANULARES -->
+        <div class="form-group full-width" style="margin-top: 10px;">
+          <label style="border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; font-size: 0.95rem;">
+            Módulos Permitidos
+          </label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 15px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; color: #2d3748;">
+              <input type="checkbox" [(ngModel)]="nuevoAdmin.privilegios.inicio" style="width: 18px; height: 18px;"> Inicio
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; color: #2d3748;">
+              <input type="checkbox" [(ngModel)]="nuevoAdmin.privilegios.instructores" style="width: 18px; height: 18px;"> Instructores
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; color: #2d3748;">
+              <input type="checkbox" [(ngModel)]="nuevoAdmin.privilegios.asignaciones" style="width: 18px; height: 18px;"> Asignaciones
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; color: #2d3748;">
+              <input type="checkbox" [(ngModel)]="nuevoAdmin.privilegios.agenda" style="width: 18px; height: 18px;"> Agenda
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; color: #2d3748;">
+              <input type="checkbox" [(ngModel)]="nuevoAdmin.privilegios.administradores" style="width: 18px; height: 18px;"> Administradores
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; color: #2d3748;">
+              <input type="checkbox" [(ngModel)]="nuevoAdmin.privilegios.prospectos" style="width: 18px; height: 18px;"> Prospectos
+            </label>
+          </div>
         </div>
         
       </div>

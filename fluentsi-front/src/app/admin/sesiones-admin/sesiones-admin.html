@@ -1,0 +1,166 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1>Agenda de Clases</h1>
+      <p class="subtitle">Programa y administra las sesiones entre instructores y alumnos</p>
+    </div>
+    <button class="btn-primary" (click)="abrirModalNuevo()">
+      + Nueva Sesión
+    </button>
+  </div>
+
+  <!-- Mensaje de éxito -->
+  <div class="alert-success" *ngIf="mensajeExito">{{ mensajeExito }}</div>
+
+  <!-- Filtros -->
+  <div class="filter-bar">
+    <button class="filter-btn" [class.active]="filtroEstado === 'programada'" (click)="filtroEstado = 'programada'">
+      📅 Programadas
+    </button>
+    <button class="filter-btn" [class.active]="filtroEstado === 'completada'" (click)="filtroEstado = 'completada'">
+      ✅ Completadas
+    </button>
+    <button class="filter-btn" [class.active]="filtroEstado === 'cancelada'" (click)="filtroEstado = 'cancelada'">
+      ❌ Canceladas
+    </button>
+    <button class="filter-btn" [class.active]="filtroEstado === 'todas'" (click)="filtroEstado = 'todas'">
+      📋 Todas
+    </button>
+  </div>
+
+  <!-- Cargando -->
+  <div class="loading-state" *ngIf="cargando"><p>Cargando sesiones...</p></div>
+
+  <!-- Sin sesiones -->
+  <div class="empty-state" *ngIf="!cargando && sessionesFiltradas.length === 0">
+    <p>No hay sesiones {{ filtroEstado !== 'todas' ? filtroEstado + 's' : '' }}.</p>
+    <button class="btn-primary" (click)="abrirModalNuevo()">Crear la primera sesión</button>
+  </div>
+
+  <!-- Tabla de sesiones -->
+  <div class="table-container" *ngIf="!cargando && sessionesFiltradas.length > 0">
+    <table class="sesiones-table">
+      <thead>
+        <tr>
+          <th>Fecha y Hora</th>
+          <th>Instructor</th>
+          <th>Alumnos</th>
+          <th>Objetivo</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of sessionesFiltradas">
+          <td>
+            <div class="fecha-cell">
+              <span class="fecha">{{ formatearFecha(s.fecha) }}</span>
+              <span class="hora">🕐 {{ s.hora?.substring(0,5) }}</span>
+            </div>
+          </td>
+          <td>
+            <strong>{{ s.nombre_instructor }} {{ s.ap_instructor }}</strong>
+          </td>
+          <td>{{ s.nombres_alumnos || 'Sin alumnos' }}</td>
+          <td>{{ s.objetivo || '—' }}</td>
+          <td>
+            <span class="badge" [ngClass]="getEstadoClass(s.estado)">
+              {{ s.estado | titlecase }}
+            </span>
+          </td>
+          <td>
+            <div class="acciones">
+              <button class="btn-icon-edit" title="Editar" (click)="abrirModalEditar(s)" *ngIf="s.estado === 'programada'">
+                ✏️
+              </button>
+              <button class="btn-icon-danger" title="Cancelar" (click)="cancelarSesion(s)" *ngIf="s.estado === 'programada'">
+                ✕
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Crear/Editar Sesión -->
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ modoEdicion ? 'Editar Sesión' : 'Nueva Sesión' }}</h2>
+      <button class="modal-close" (click)="cerrarModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label>Instructor *</label>
+          <select [(ngModel)]="formulario.id_instructor" id="sel-instructor">
+            <option [value]="0">— Selecciona —</option>
+            <option *ngFor="let i of instructores" [value]="i.id_instructor">
+              {{ i.nombre }} {{ i.ap_paterno }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Alumnos * (puedes seleccionar uno o varios)</label>
+          <div class="alumnos-selector-box">
+            <label *ngFor="let e of estudiantes" class="checkbox-label">
+              <input 
+                type="checkbox" 
+                [checked]="isEstudianteSeleccionado(e.id_estudiante)" 
+                (change)="toggleEstudiante(e.id_estudiante)" 
+              />
+              <span>{{ e.nombre }} {{ e.ap_paterno }} <small style="color: #718096">({{ e.correo }})</small></span>
+            </label>
+          </div>
+          <small class="selector-help" *ngIf="formulario.estudiantes_ids.length > 0">
+            {{ formulario.estudiantes_ids.length }} alumno(s) seleccionado(s)
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>Fecha *</label>
+          <input type="date" [(ngModel)]="formulario.fecha" id="inp-fecha" />
+        </div>
+
+        <div class="form-group">
+          <label>Hora *</label>
+          <input type="time" [(ngModel)]="formulario.hora" id="inp-hora" />
+        </div>
+
+        <div class="form-group full-width">
+          <label>Objetivo de la sesión</label>
+          <input type="text" [(ngModel)]="formulario.objetivo" id="inp-objetivo"
+            placeholder="Ej: Preparación para entrevista laboral" />
+        </div>
+
+        <div class="form-group full-width" *ngIf="modoEdicion">
+          <label>Estado</label>
+          <select [(ngModel)]="formulario.estado" id="sel-estado">
+            <option value="programada">Programada</option>
+            <option value="completada">Completada</option>
+            <option value="cancelada">Cancelada</option>
+          </select>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Notas adicionales</label>
+          <textarea [(ngModel)]="formulario.notas" id="ta-notas" rows="3"
+            placeholder="Notas opcionales..."></textarea>
+        </div>
+      </div>
+
+      <div class="alert-error" *ngIf="mensajeError">{{ mensajeError }}</div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="cerrarModal()">Cancelar</button>
+      <button class="btn-primary" (click)="guardarSesion()">
+        {{ modoEdicion ? 'Guardar Cambios' : 'Crear Sesión' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -13,6 +13,10 @@ import { QuizComponent } from './quiz/quiz';
 import { CreateCourseComponent } from './create-course/create-course';
 import { AddLessonsComponent } from './add-lessons/add-lessons';
 
+
+import { AdminGuard } from './services/admin.guard';
+import { LoginAdmin } from './admin/login-admin/login-admin'; 
+
 export const routes: Routes = [
   { path: '', component: Login, canActivate: [NoAuthGuard] },
   { path: 'login', component: Login, canActivate: [NoAuthGuard] },
@@ -23,6 +27,7 @@ export const routes: Routes = [
   { path: 'agenda', component: MyAgendaComponent, canActivate: [AuthGuard] },
   { path: 'student-dashboard', component: StudentDashboardComponent, canActivate: [AuthGuard] },
   { path: 'student-home', component: StudentDashboardComponent, canActivate: [AuthGuard] },
+  { path: 'curso/:id', component: CourseViewerComponent, canActivate: [AuthGuard] },
   { path: 'leccion', component: CourseViewerComponent, canActivate: [AuthGuard] },
   { path: 'quiz', component: QuizComponent, canActivate: [AuthGuard] },
   
@@ -36,11 +41,17 @@ export const routes: Routes = [
   // Ruta para agregar lecciones a un curso específico
   { path: 'agregar-lecciones/:id', component: AddLessonsComponent, canActivate: [AuthGuard] },
 
-
-  // ==========================================
+// ==========================================
   // RUTAS DEL ADMINISTRADOR
   // ==========================================
+  
+  // El login se queda sin candado para que puedan entrar a loguearse
+  { path: 'admin/login', component: LoginAdmin },
 
-  { path: 'admin', loadChildren: () => import('./admin/admin.routes').then(m => m.ADMIN_ROUTES) 
+  // 2. LE PONEMOS EL CANDADO A TODO EL PANEL
+  { 
+    path: 'admin', 
+    loadChildren: () => import('./admin/admin.routes').then(m => m.ADMIN_ROUTES),
+    canActivate: [AdminGuard] // <--- ESTO ES LO QUE FALTABA
   }
 ];
