@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core'; 
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router, RouterModule } from '@angular/router';
@@ -78,14 +78,11 @@ export class CoursesComponent implements OnInit {
 
   gestionarCurso(idCurso: number): void {
     if (!this.isStudent) {
-      // El profesor edita el curso
       this.router.navigate(['/editar-curso', idCurso]);
     } else {
       if (this.estaInscrito(idCurso)) {
-        // Estudiante ya inscrito, acceder al contenido
         this.router.navigate(['/leccion']);
       } else {
-        // Estudiante no inscrito, realizar inscripción
         this.inscribirse(idCurso);
       }
     }
@@ -99,7 +96,6 @@ export class CoursesComponent implements OnInit {
       id_curso: idCurso
     }).subscribe({
       next: () => {
-        // Agregarlo a la lista local para reflejar el botón al instante
         this.inscritosIds.add(idCurso);
         this.cdr.detectChanges();
         alert('¡Te has inscrito al curso exitosamente!');

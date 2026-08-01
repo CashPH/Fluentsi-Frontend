@@ -1,25 +1,144 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../services/auth.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-genda',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './agenda.html',
   styleUrls: ['./agenda.css']
 })
-export class MyAgendaComponent {
-  dias = [
-    { nombre: 'Lunes 08', activo: true },
-    { nombre: 'Martes 09', activo: false },
-    { nombre: 'Miercoles 10', activo: false },
-    { nombre: 'Jueves 11', activo: false },
-    { nombre: 'Viernes 12', activo: false }
-  ];
+export class MyAgendaComponent implements OnInit, OnDestroy {
+  private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
 
-  clases = [
-    { hora: '10:00', alumna: '<Nombre Alumna>', objetivo: 'Entrevista', nivel: 'B2', img: 'assets/alumna.jpg' },
-    { hora: '11:00', alumna: '<Nombre Alumna>', objetivo: 'Entrevista', nivel: 'B2', img: 'assets/alumna.jpg' },
-    { hora: '12:00', alumna: '<Nombre Alumna>', objetivo: 'Entrevista', nivel: 'B2', img: 'assets/alumna.jpg' }
-  ];
+  private userSub: Subscription | null = null;
+  private readonly API = 'http://localhost:4000/api';
+
+  teacherId: number | null = null;
+  cargando = true;
+
+  // Semana actual
+  semanaInicio: Date = this.getLunes(new Date());
+  dias: { fecha: Date; label: string; activo: boolean }[] = [];
+
+  // Día seleccionado
+  diaSeleccionado: Date = new Date();
+
+  // Sesiones del día seleccionado
+  todasSesiones: any[] = [];
+
+  constructor(private authService: AuthService) { }
+
+  ngOnInit(): void {
+    this.userSub = this.authService.user$.subscribe(user => {
+      if (user) {
+        this.teacherId = Number(user.userId ?? user.id_instructor ?? user.id ?? null) || null;
+        this.generarDias();
+        this.cargarSesiones();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.userSub?.unsubscribe();
+  }
+
+  getLunes(d: Date): Date {
+    const dia = new Date(d);
+    const diaSemana = dia.getDay(); // 0=Dom, 1=Lun, ...
+    const diff = diaSemana === 0 ? -6 : 1 - diaSemana;
+    dia.setDate(dia.getDate() + diff);
+    dia.setHours(0, 0, 0, 0);
+    return dia;
+  }
+
+  generarDias(): void {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    this.dias = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(this.semanaInicio);
+      d.setDate(d.getDate() + i);
+      const esHoy = d.getTime() === hoy.getTime();
+      this.dias.push({
+        fecha: d,
+        label: d.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric' }),
+        activo: esHoy || (i === 0 && d.getTime() === this.diaSeleccionado.getTime())
+      });
+    }
+
+    const hoyEnSemana = this.dias.find(d => d.activo);
+    this.diaSeleccionado = hoyEnSemana ? hoyEnSemana.fecha : this.dias[0].fecha;
+  }
+
+  cargarSesiones(): void {
+    if (!this.teacherId) { this.cargando = false; return; }
+
+    const fin = new Date(this.semanaInicio);
+    fin.setDate(fin.getDate() + 6);
+
+    const fi = this.toISO(this.semanaInicio);
+    const ff = this.toISO(fin);
+
+    this.cargando = true;
+    this.http.get<any[]>(`${this.API}/teacher/${this.teacherId}/sesiones?fecha_inicio=${fi}&fecha_fin=${ff}`).subscribe({
+      next: (data) => {
+        this.todasSesiones = Array.isArray(data) ? data : [];
+        this.cargando = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.todasSesiones = [];
+        this.cargando = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  get sesionesDelDia(): any[] {
+    const selStr = this.toISO(this.diaSeleccionado);
+    return this.todasSesiones.filter(s => {
+      const f = s.fecha?.split('T')[0] || s.fecha;
+      return f === selStr;
+    });
+  }
+
+  tieneSesiones(dia: Date): boolean {
+    const str = this.toISO(dia);
+    return this.todasSesiones.some(s => (s.fecha?.split('T')[0] || s.fecha) === str);
+  }
+
+  seleccionarDia(dia: { fecha: Date; label: string; activo: boolean }): void {
+    this.dias.forEach(d => d.activo = false);
+    dia.activo = true;
+    this.diaSeleccionado = dia.fecha;
+    this.cdr.detectChanges();
+  }
+
+  semanaAnterior(): void {
+    this.semanaInicio.setDate(this.semanaInicio.getDate() - 7);
+    this.semanaInicio = new Date(this.semanaInicio);
+    this.generarDias();
+    this.cargarSesiones();
+  }
+
+  semanaSiguiente(): void {
+    this.semanaInicio.setDate(this.semanaInicio.getDate() + 7);
+    this.semanaInicio = new Date(this.semanaInicio);
+    this.generarDias();
+    this.cargarSesiones();
+  }
+
+  private toISO(d: Date): string {
+    return d.toISOString().split('T')[0];
+  }
+
+  logout(): void {
+    this.authService.logout();
+  }
 }

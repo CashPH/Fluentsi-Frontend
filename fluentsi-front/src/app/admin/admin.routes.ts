@@ -6,6 +6,8 @@ import { InstructoresAdminComponent } from './instructores-admin/instructores-ad
 import { AdministradoresAdminComponent } from './administradores-admin/administradores-admin';
 import { ProspectosAdmin } from './prospectos-admin/prospectos-admin';
 import { LoginAdmin } from './login-admin/login-admin';
+import { AsignacionesAdminComponent } from './asignaciones-admin/asignaciones-admin';
+import { SesionesAdminComponent } from './sesiones-admin/sesiones-admin';
 
 export const ADMIN_ROUTES: Routes = [
   { path: 'login', component: LoginAdmin },
@@ -17,6 +19,8 @@ export const ADMIN_ROUTES: Routes = [
       { path: 'instructores', component: InstructoresAdminComponent },
       { path: 'administradores', component: AdministradoresAdminComponent },
       { path: 'prospectos', component: ProspectosAdmin },
+      { path: 'asignaciones', component: AsignacionesAdminComponent },
+      { path: 'sesiones', component: SesionesAdminComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   }
