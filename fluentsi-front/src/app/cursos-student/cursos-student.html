@@ -2,25 +2,30 @@
     <nav class="navbar">
         <div class="nav-left">
             <img src="logo.png" alt="Logo" class="logo">
-              <ul class="nav-links">
-               <li><a routerLink="/student-home">Inicio</a></li>
-               <li><a routerLink="/cursos" class="active">Cursos</a></li>
-              </ul>
+            <ul class="nav-links">
+                <li><a routerLink="/student-home">Inicio</a></li>
+                <li><a routerLink="/cursos" class="active">Cursos</a></li>
+                <li><a routerLink="/">Calificaciones</a></li>
+                <li><a routerLink="/">Pagos</a></li>
+            </ul>
         </div>
         <div class="nav-right">
-        <button class="logout-btn" (click)="logout()">Log out 🚪</button>
-        <img src="monito.png" alt="Mascot" class="nav-mascot">
+            <button class="logout-btn" (click)="logout()">Log out 🚪</button>
+            <img src="monito.png" alt="Mascot" class="nav-mascot">
         </div>
     </nav>
 
     <main class="main-content">
-        <div class="search-bar-container"
-            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div class="search-bar-container" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
             <div class="search-input-wrapper">
                 <span class="search-icon">🔍</span>
                 <input type="text" placeholder="Busca un curso" [(ngModel)]="textoBusqueda">
             </div>
 
+            <button *ngIf="!isStudent" routerLink="/crear-curso"
+                style="padding: 0.8rem 1.5rem; background-color: #4ade80; color: #000; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; font-size: 1rem;">
+                + Nuevo Curso
+            </button>
         </div>
 
         <div class="layout-grid">
@@ -41,8 +46,7 @@
             </aside>
 
             <section class="courses-grid">
-                <div class="course-card" *ngFor="let curso of cursosFiltrados" (click)="gestionarCurso(curso.id_curso)"
-                    style="cursor: pointer;">
+                <div class="course-card" *ngFor="let curso of cursosFiltrados" (click)="gestionarCurso(curso.id_curso)" style="cursor: pointer;">
                     <div class="card-image-container">
                         <img src="assets/curso1.jpg" alt="Course Image" class="course-img">
                         <img src="logo-blanco.jpg" alt="Badge" class="card-badge">

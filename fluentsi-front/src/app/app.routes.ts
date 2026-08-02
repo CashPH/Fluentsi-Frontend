@@ -12,6 +12,7 @@ import { CourseViewerComponent } from './course-viewer/course-viewer';
 import { QuizComponent } from './quiz/quiz';
 import { CreateCourseComponent } from './create-course/create-course';
 import { AddLessonsComponent } from './add-lessons/add-lessons';
+import { CursosStudentComponent } from './cursos-student/cursos-student';
 
 
 import { AdminGuard } from './services/admin.guard';
@@ -30,6 +31,7 @@ export const routes: Routes = [
   { path: 'curso/:id', component: CourseViewerComponent, canActivate: [AuthGuard] },
   { path: 'leccion', component: CourseViewerComponent, canActivate: [AuthGuard] },
   { path: 'quiz', component: QuizComponent, canActivate: [AuthGuard] },
+  { path: 'cursos-student', component: CursosStudentComponent },
   
   // ==========================================
   // RUTAS DEL INSTRUCTOR (GESTIÓN DE CURSOS)

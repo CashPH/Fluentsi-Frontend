@@ -3,17 +3,17 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router, RouterLink, RouterModule } from '@angular/router';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../services/auth.service'; // Ajusta la ruta a tu AuthService si es diferente
 import { catchError, forkJoin, of } from 'rxjs';
 
 @Component({
-  selector: 'app-courses',
+  selector: 'app-cursos-student',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, RouterLink],
   templateUrl: './cursos-student.html',
   styleUrl: './cursos-student.css',
 })
-export class CoursesComponent implements OnInit {
+export class CursosStudentComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -26,17 +26,17 @@ export class CoursesComponent implements OnInit {
   textoBusqueda = '';
 
   cursos: any[] = [];
-  isStudent: boolean = false;
+  isStudent: boolean = true;
   userId: number | null = null;
   inscritosIds: Set<number> = new Set<number>();
   cargando: boolean = true;
 
   ngOnInit(): void {
     const user = this.authService.getUser();
-    if (user && user.role === 'student') {
-      this.isStudent = true;
+    if (user) {
+      this.isStudent = user.role === 'student';
       this.userId = Number(user.userId ?? user.id_estudiante ?? null) || null;
-      console.log('CoursesComponent user loaded:', user, 'resolved userId:', this.userId);
+      console.log('CursosStudentComponent user loaded:', user, 'resolved userId:', this.userId);
     }
     this.cargarCursos();
   }
@@ -46,14 +46,18 @@ export class CoursesComponent implements OnInit {
 
     if (this.isStudent && this.userId && this.userId > 0) {
       forkJoin({
-        todos: this.http.get<any[]>('http://localhost:4000/api/cursos').pipe(catchError((error) => {
-          console.error('CoursesComponent error loading cursos:', error);
-          return of([]);
-        })),
-        inscritos: this.http.get<any[]>(`http://localhost:4000/api/inscripciones/${this.userId}`).pipe(catchError((error) => {
-          console.error('CoursesComponent error loading inscripciones:', error);
-          return of([]);
-        }))
+        todos: this.http.get<any[]>('http://localhost:4000/api/cursos').pipe(
+          catchError((error) => {
+            console.error('CursosStudentComponent error loading cursos:', error);
+            return of([]);
+          })
+        ),
+        inscritos: this.http.get<any[]>(`http://localhost:4000/api/inscripciones/${this.userId}`).pipe(
+          catchError((error) => {
+            console.error('CursosStudentComponent error loading inscripciones:', error);
+            return of([]);
+          })
+        )
       }).subscribe(({ todos, inscritos }) => {
         this.cursos = todos;
         this.inscritosIds = new Set(inscritos.map((c: any) => c.id_curso));

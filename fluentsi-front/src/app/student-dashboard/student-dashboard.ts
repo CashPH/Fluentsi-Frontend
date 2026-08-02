@@ -13,6 +13,9 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./student-dashboard.css']
 })
 export class StudentDashboardComponent implements OnInit, OnDestroy {
+student() {
+throw new Error('Method not implemented.');
+}
 goToAgenda() {
 throw new Error('Method not implemented.');
 }
@@ -165,6 +168,10 @@ throw new Error('Method not implemented.');
 
   goToCursos(): void {
     this.router.navigate(['/cursos']);
+  }
+
+  goToCursosStudent(): void {
+    this.router.navigate(['/cursos-student']);
   }
 
   goToCursoViewer(idCurso: number): void {

@@ -73,10 +73,10 @@
 .main-content {
     flex: 1;
     background-color: #1712a4;
-    background-image: url('/fondo-manos.png'); /* <-- Directo desde la raíz */
+    background-image: url('/fondo-manos.png');
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat; /* Es bueno agregar esto para evitar repeticiones */
+    background-repeat: no-repeat;
     padding: 2rem 3rem;
 }
 
@@ -85,7 +85,7 @@
 }
 
 .search-input-wrapper {
-    background: #ffff;
+    background: #ffffff;
     border-radius: 25px;
     display: inline-flex;
     align-items: center;
@@ -93,14 +93,6 @@
     width: 350px;
 }
 
-.search-input-wrapper input {
-    color: #000;
-}
-
-.search-input-wrapper input::placeholder {
-    color: #000;
-    opacity: 0.85; 
-}
 .search-icon {
     margin-right: 10px;
 }
@@ -111,6 +103,12 @@
     outline: none;
     width: 100%;
     font-size: 1rem;
+    color: #000;
+}
+
+.search-input-wrapper input::placeholder {
+    color: #000;
+    opacity: 0.85; 
 }
 
 .layout-grid {
@@ -180,9 +178,10 @@
     width: 55px;
     background-color: #000;
     border-radius: 50%;
-    padding: 0;           
-    object-fit: cover;    
+    padding: 0;
+    object-fit: cover;
 }
+
 .card-body {
     padding: 1.8rem 1.5rem 1.5rem 1.5rem;
     display: flex;
