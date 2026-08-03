@@ -18,58 +18,66 @@
 
     <main class="main-content">
 
-        <!-- Navegador de semana -->
-        <div class="week-navigator">
-            <button class="week-btn" (click)="semanaAnterior()">← Semana anterior</button>
-            <span class="week-label">
-                Semana del {{ semanaInicio | date:'d MMM' : '' : 'es-MX' }}
-                al {{ dias[6]?.fecha | date:'d MMM yyyy' : '' : 'es-MX' }}
-            </span>
-            <button class="week-btn" (click)="semanaSiguiente()">Semana siguiente →</button>
+        <div class="agenda-intro">
+            <div>
+                <p class="subtitle">Mi agenda</p>
+                <h1 class="welcome-title">Mis sesiones programadas</h1>
+            </div>
+            <div class="week-navigation-card">
+                <span class="week-label">Semana del {{ semanaInicioLabel }} al {{ semanaFinLabel }}</span>
+                <div class="week-buttons">
+                    <button class="week-btn" (click)="semanaAnterior()">← Semana anterior</button>
+                    <button class="week-btn" (click)="semanaSiguiente()">Semana siguiente →</button>
+                </div>
+            </div>
         </div>
 
         <div class="agenda-layout">
 
             <aside class="day-selector">
-                <h3>Selector de Días</h3>
-                <div class="days-list">
-                    <button
-                        *ngFor="let dia of dias"
-                        [class.active]="dia.activo"
-                        [class.has-sessions]="tieneSesiones(dia.fecha)"
-                        (click)="seleccionarDia(dia)">
-                        {{ dia.label }}
-                        <span class="dot" *ngIf="tieneSesiones(dia.fecha)">•</span>
-                    </button>
+                <div class="selector-card">
+                    <h3>Selector de Días</h3>
+                    <div class="days-list">
+                        <button
+                            *ngFor="let dia of dias"
+                            [class.active]="dia.activo"
+                            [class.has-sessions]="tieneSesiones(dia.fecha)"
+                            (click)="seleccionarDia(dia)">
+                            {{ dia.label }}
+                            <span class="dot" *ngIf="tieneSesiones(dia.fecha)">•</span>
+                        </button>
+                    </div>
                 </div>
             </aside>
 
             <section class="timeline-container">
-                <!-- Cargando -->
-                <div class="empty-timeline" *ngIf="cargando">
-                    <p>Cargando sesiones...</p>
-                </div>
+                <div class="timeline-body">
+                    <div class="empty-timeline" *ngIf="cargando">
+                        <p>Cargando sesiones...</p>
+                    </div>
 
-                <!-- Sin sesiones para el día -->
-                <div class="empty-timeline" *ngIf="!cargando && sesionesDelDia.length === 0">
-                    <p>No hay sesiones programadas para este día.</p>
-                </div>
+                    <div class="empty-timeline" *ngIf="!cargando && sesionesDelDia.length === 0">
+                        <p>No hay sesiones programadas para este día.</p>
+                    </div>
 
-                <div class="timeline-line" *ngIf="!cargando && sesionesDelDia.length > 0"></div>
+                    <div class="timeline-line" *ngIf="!cargando && sesionesDelDia.length > 0"></div>
 
-                <div class="timeline-slot" *ngFor="let sesion of sesionesDelDia">
-                    <div class="time-label">{{ sesion.hora?.substring(0,5) }}</div>
+                    <div class="timeline-slot" *ngFor="let sesion of sesionesDelDia">
+                        <div class="time-label">{{ sesion.hora?.substring(0,5) }}</div>
 
-                    <div class="class-card">
-                        <img src="assets/alumna.jpg" alt="Student" class="student-img">
-                        <div class="card-info">
-                            <div class="info-top">
-                                <h4>{{ sesion.nombre_alumno }}</h4>
-                                <p>Objetivo: {{ sesion.objetivo || 'General' }}</p>
+                        <div class="class-card">
+                            <div class="card-image">
+                                <img src="assets/alumna.jpg" alt="Student" class="student-img">
                             </div>
-                            <span class="level-badge" *ngIf="sesion.nivel">{{ sesion.nivel }}</span>
+                            <div class="card-info">
+                                <div class="info-top">
+                                    <h4>{{ sesion.nombre_alumno }}</h4>
+                                    <p>Objetivo: {{ sesion.objetivo || 'General' }}</p>
+                                </div>
+                                <span class="level-badge" *ngIf="sesion.nivel">{{ sesion.nivel }}</span>
+                            </div>
+                            <button class="start-btn">Iniciar Sesión</button>
                         </div>
-                        <button class="start-btn">Iniciar Sesión</button>
                     </div>
                 </div>
             </section>

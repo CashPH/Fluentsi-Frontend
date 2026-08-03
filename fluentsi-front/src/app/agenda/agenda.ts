@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
@@ -34,7 +35,9 @@ export class MyAgendaComponent implements OnInit, OnDestroy {
 
   // Semana actual
   semanaInicio: Date = this.getLunes(new Date());
-  
+  semanaInicioLabel: string = '';
+  semanaFinLabel: string = '';
+
   // Única declaración de 'dias' con la interfaz correcta
   dias: { fecha: Date; label: string; activo: boolean }[] = [];
 
@@ -48,14 +51,21 @@ export class MyAgendaComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
+    // Generate day labels immediately so the week header renders on first display
+    this.generarDias();
+    this.actualizarEtiquetasSemana();
+    this.cdr.detectChanges();
+
     this.userSub = this.authService.user$.subscribe(user => {
       if (user) {
         this.teacherId = Number(user.userId ?? user.id_instructor ?? user.id ?? null) || null;
         this.generarDias();
+        this.actualizarEtiquetasSemana();
         this.cargarSesiones();
       }
     });
@@ -156,7 +166,18 @@ export class MyAgendaComponent implements OnInit, OnDestroy {
     return d.toISOString().split('T')[0];
   }
 
+  private actualizarEtiquetasSemana(): void {
+    this.semanaInicioLabel = this.semanaInicio.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+    const fin = new Date(this.semanaInicio);
+    fin.setDate(fin.getDate() + 6);
+    this.semanaFinLabel = fin.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
   logout(): void {
     this.authService.logout();
+  }
+
+  agendarCita(): void {
+    this.router.navigate(['/agenda/agendar']);
   }
 }
