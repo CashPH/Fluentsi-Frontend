@@ -13,6 +13,7 @@ import { QuizComponent } from './quiz/quiz';
 import { CreateCourseComponent } from './create-course/create-course';
 import { AddLessonsComponent } from './add-lessons/add-lessons';
 import { CursosStudentComponent } from './cursos-student/cursos-student';
+import { CalificacionesInstructor } from './calificaciones.instructor/calificaciones.instructor';
 
 
 import { AdminGuard } from './services/admin.guard';
@@ -32,7 +33,8 @@ export const routes: Routes = [
   { path: 'leccion', component: CourseViewerComponent, canActivate: [AuthGuard] },
   { path: 'quiz', component: QuizComponent, canActivate: [AuthGuard] },
   { path: 'cursos-student', component: CursosStudentComponent },
-  
+  { path: 'calificaciones-instructor', component: CalificacionesInstructor, canActivate: [AuthGuard] },
+
   // ==========================================
   // RUTAS DEL INSTRUCTOR (GESTIÓN DE CURSOS)
   // ==========================================

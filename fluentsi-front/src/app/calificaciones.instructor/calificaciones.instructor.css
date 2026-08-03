@@ -1,0 +1,227 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.page-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: sans-serif;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 3rem;
+    background-color: #f2f2f2;
+    height: 80px;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+}
+
+.logo {
+    height: 50px;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #000;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.nav-links a.active {
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 5px;
+    color: #1712a4;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.logout-btn {
+    background-color: #fdf04b;
+    border: 1px solid #000;
+    padding: 0.5rem 1.2rem;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.nav-mascot{
+    height: 235px;       
+    margin-top: 50px;    
+}
+
+.main-body {
+    flex: 1;
+    background-color: #1712a4;
+    background-image: url('/fondo-manos.png'); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding: 2rem 3rem;
+    
+    width: 100%; 
+    min-height: calc(100vh - 80px); 
+}
+
+.main-title {
+    color: #ffffff;
+    font-size: 2rem;
+    font-weight: bold;
+    margin-top: 0;
+    margin-bottom: 30px;
+
+    position: relative; 
+  display: inline-block; 
+  padding: 5px 15px; 
+  z-index: 1;
+}
+
+.main-title::before {
+  content: ''; 
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.25); 
+  border-radius: 10px; 
+  z-index: -1; 
+  backdrop-filter: blur(3px); 
+}
+
+.content-layout {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+
+.grupos-card {
+    background-color: #8f8be8;
+    width: 200px;
+    border-radius: 20px;
+    padding: 20px 15px;
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.grupos-title {
+    color: #ffffff;
+    font-size: 1.3rem;
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: left;
+    padding-left: 5px;
+}
+
+.grupos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.grupo-btn {
+    background-color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 16px;
+    font-weight: bold;
+    font-size: 0.95rem;
+    color: #000000;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.grupo-btn.active {
+    background-color: #ffffff;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.arrow {
+    color: #0b02be;
+    font-size: 0.8rem;
+}
+
+.alumnas-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.card-alumno {
+    background-color: #ffffff;
+    border-radius: 30px;
+    padding: 12px 30px 12px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.alumno-info {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.avatar-photo {
+    width: 120px;
+    height: 90px;
+    border-radius: 20px;
+    object-fit: cover;
+    background-color: #333;
+}
+
+.alumno-nombre {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #000000;
+}
+
+.btn-calificar {
+    background-color: #f1f834;
+    border: 1.5px solid #000000;
+    border-radius: 25px;
+    padding: 10px 45px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #000000;
+    cursor: pointer;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.15);
+    transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.btn-calificar:hover {
+    transform: scale(1.04);
+    background-color: #e2e828;
+}
+
+.no-alumnas {
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-style: italic;
+    padding: 20px;
+}

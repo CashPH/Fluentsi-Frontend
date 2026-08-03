@@ -174,6 +174,7 @@ throw new Error('Method not implemented.');
     this.router.navigate(['/cursos-student']);
   }
 
+
   goToCursoViewer(idCurso: number): void {
     this.router.navigate(['/curso', idCurso]);
   }

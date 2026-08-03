@@ -39,33 +39,23 @@
 
 
 .navbar {
-
     display: flex;
-
     justify-content: space-between;
-
     align-items: center;
-
     padding: 0 3rem;
-
     background-color: #f2f2f2;
-
-    height: 80px;
-
+    height: 85px;
+    position: relative;
+    overflow: hidden;    
 }
-
 
 
 .nav-left,
 
 .nav-right {
-
     display: flex;
-
     align-items: center;
-
-    gap: 2rem;
-
+    gap: 1.5rem;
 }
 
 
@@ -137,13 +127,9 @@
 
 
 .nav-mascot {
-
-    height: 110px;
-
-    margin-top: 30px;
-
+    height: 235px;     
+    margin-top: 50px;   
 }
-
 
 
 .main-content {

@@ -1,0 +1,60 @@
+<div class="page-container">
+
+  <!-- NAVBAR -->
+   <nav class="navbar">
+        <div class="nav-left">
+            <img src="/logo.png" alt="Logo" class="logo">
+            <ul class="nav-links">
+                <li><a routerLink="/teacher-home">Inicio</a></li>
+                <li><a routerLink="/agenda">Mi agenda</a></li>
+                <li><a routerLink="/cursos">Cursos</a></li>
+                <li><a routerLink="/revisiones">Revisiones</a></li>
+             
+                <li><a routerLink="/calificaciones-instructor" class="active">Calificaciones</a></li>
+            </ul>
+        </div>
+
+        <div class="nav-right">
+            <button class="logout-btn" (click)="logout()">Log out 🚪</button>
+            <img src="monito.png" alt="Mascot" class="nav-mascot">
+        </div>
+    </nav>
+
+ 
+  <main class="main-body">
+    <h1 class="main-title">Subir calificaciones</h1>
+
+    <div class="content-layout">
+    
+      <aside class="grupos-card">
+        <h2 class="grupos-title">Grupos</h2>
+        <div class="grupos-list">
+          <button 
+            *ngFor="let grupo of grupos" 
+            class="grupo-btn" 
+            [class.active]="grupoSeleccionado === grupo"
+            (click)="seleccionarGrupo(grupo)">
+            <span>{{ grupo }}</span>
+            <span *ngIf="grupoSeleccionado === grupo" class="arrow">◄</span>
+          </button>
+        </div>
+      </aside>
+
+  
+      <section class="alumnas-container">
+        <div *ngFor="let alumno of alumnasFiltradas" class="card-alumno">
+          <div class="alumno-info">
+           
+            <img [src]="alumno.avatarUrl || '../../assets/monit.png'" alt="Avatar" class="avatar-photo" />
+            <span class="alumno-nombre">&lt;{{ alumno.nombreAlumno }}&gt;</span>
+          </div>
+
+          <button class="btn-calificar" (click)="calificarAlumno(alumno)">
+            Calificar
+          </button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+</div>
