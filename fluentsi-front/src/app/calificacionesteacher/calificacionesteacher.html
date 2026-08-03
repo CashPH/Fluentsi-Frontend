@@ -1,0 +1,149 @@
+<div class="page-container">
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <img src="/logo.png" alt="Logo" class="logo">
+      <ul class="nav-links">
+        <li><a routerLink="/teacher-home">Inicio</a></li>
+        <li><a routerLink="/cursos">Cursos</a></li>
+        <li><a routerLink="/calificaciones-instructor" class="active">Calificaciones</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-right">
+      <button class="logout-btn" (click)="logout()">Log out 🚪</button>
+      <img src="/monito.png" alt="Mascot" class="nav-mascot">
+    </div>
+  </nav>
+
+  <main class="main-body">
+    <h1 class="main-title">Subir calificaciones</h1>
+
+    <div class="content-layout">
+      <!-- SIDEBAR GRUPOS -->
+      <aside class="grupos-card">
+        <h2 class="grupos-title">Grupos</h2>
+        <div class="grupos-list">
+          <button 
+            *ngFor="let grupo of grupos" 
+            class="grupo-btn" 
+            [class.active]="grupoSeleccionado === grupo"
+            (click)="seleccionarGrupo(grupo)">
+            <span>{{ grupo }}</span>
+            <span *ngIf="grupoSeleccionado === grupo" class="arrow">◄</span>
+          </button>
+        </div>
+      </aside>
+
+      <section class="calificar-card">
+        <div class="alumno-header">
+          <img [src]="alumno.avatarUrl || 'assets/monit.png'" alt="Avatar" class="avatar-photo" />
+          <h2 class="alumno-nombre">&lt;{{ alumno.nombreAlumno }}&gt;</h2>
+        </div>
+
+        <div class="form-container">
+          <div class="evaluaciones-grid">
+
+            <div class="evaluacion-item">
+              <label class="eval-label">Cursos</label>
+              <div class="color-picker">
+                <button 
+                  type="button" 
+                  class="circle-btn red" 
+                  [class.selected]="evaluacionCursos === 'rojo'"
+                  (click)="evaluacionCursos = 'rojo'"
+                  title="Necesitas repetir">
+                </button>
+                <button 
+                  type="button" 
+                  class="circle-btn yellow" 
+                  [class.selected]="evaluacionCursos === 'amarillo'"
+                  (click)="evaluacionCursos = 'amarillo'"
+                  title="Puedes mejorar">
+                </button>
+                <button 
+                  type="button" 
+                  class="circle-btn green" 
+                  [class.selected]="evaluacionCursos === 'verde'"
+                  (click)="evaluacionCursos = 'verde'"
+                  title="Dominas el tema">
+                </button>
+              </div>
+            </div>
+
+            <div class="evaluacion-item">
+              <label class="eval-label">Exámenes</label>
+              <div class="color-picker">
+                <button 
+                  type="button" 
+                  class="circle-btn red" 
+                  [class.selected]="evaluacionExamenes === 'rojo'"
+                  (click)="evaluacionExamenes = 'rojo'"
+                  title="Necesitas repetir">
+                </button>
+                <button 
+                  type="button" 
+                  class="circle-btn yellow" 
+                  [class.selected]="evaluacionExamenes === 'amarillo'"
+                  (click)="evaluacionExamenes = 'amarillo'"
+                  title="Puedes mejorar">
+                </button>
+                <button 
+                  type="button" 
+                  class="circle-btn green" 
+                  [class.selected]="evaluacionExamenes === 'verde'"
+                  (click)="evaluacionExamenes = 'verde'"
+                  title="Dominas el tema">
+                </button>
+              </div>
+            </div>
+
+            <div class="evaluacion-item">
+              <label class="eval-label">Desempeño General</label>
+              <div class="color-picker">
+                <button 
+                  type="button" 
+                  class="circle-btn red" 
+                  [class.selected]="evaluacionGeneral === 'rojo'"
+                  (click)="evaluacionGeneral = 'rojo'"
+                  title="Necesitas repetir">
+                </button>
+                <button 
+                  type="button" 
+                  class="circle-btn yellow" 
+                  [class.selected]="evaluacionGeneral === 'amarillo'"
+                  (click)="evaluacionGeneral = 'amarillo'"
+                  title="Puedes mejorar">
+                </button>
+                <button 
+                  type="button" 
+                  class="circle-btn green" 
+                  [class.selected]="evaluacionGeneral === 'verde'"
+                  (click)="evaluacionGeneral = 'verde'"
+                  title="Dominas el tema">
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="comentarios-section">
+            <label class="eval-label">Comentarios</label>
+            <textarea 
+              class="comentarios-input" 
+              [(ngModel)]="comentarios" 
+              placeholder="Escribe tus comentarios aquí...">
+            </textarea>
+          </div>
+
+          <div class="action-footer">
+            <button class="btn-subir" (click)="guardarCalificacion()">
+              Subir calificación
+            </button>
+          </div>
+
+        </div>
+      </section>
+    </div>
+  </main>
+</div>

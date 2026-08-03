@@ -51,6 +51,8 @@ export class CalificacionesInstructor {
   }
 
   calificarAlumno(alumno: Alumno): void {
-    console.log('Iniciando calificación para:', alumno.nombreAlumno);
+    this.router.navigate(['/calificacionesteacher'], { 
+    state: { alumnoData: alumno } 
+    });
   }
 }

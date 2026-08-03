@@ -18,6 +18,7 @@ import { CalificacionesInstructor } from './calificaciones.instructor/calificaci
 
 import { AdminGuard } from './services/admin.guard';
 import { LoginAdmin } from './admin/login-admin/login-admin'; 
+import { Calificacionesteacher } from './calificacionesteacher/calificacionesteacher';
 
 export const routes: Routes = [
   { path: '', component: Login, canActivate: [NoAuthGuard] },
@@ -34,6 +35,7 @@ export const routes: Routes = [
   { path: 'quiz', component: QuizComponent, canActivate: [AuthGuard] },
   { path: 'cursos-student', component: CursosStudentComponent },
   { path: 'calificaciones-instructor', component: CalificacionesInstructor, canActivate: [AuthGuard] },
+  { path: 'calificacionesteacher', component: Calificacionesteacher, canActivate: [AuthGuard] },
 
   // ==========================================
   // RUTAS DEL INSTRUCTOR (GESTIÓN DE CURSOS)
