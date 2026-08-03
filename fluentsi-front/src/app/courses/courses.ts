@@ -138,7 +138,7 @@ export class CoursesComponent implements OnInit {
       this.router.navigate(['/editar-curso', idCurso]);
     } else {
       if (this.estaInscrito(idCurso)) {
-        this.router.navigate(['/leccion']);
+        this.router.navigate(['/curso', idCurso]);
       } else {
         this.inscribirse(idCurso);
       }
