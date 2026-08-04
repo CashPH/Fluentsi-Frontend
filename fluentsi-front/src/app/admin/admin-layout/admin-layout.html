@@ -3,20 +3,24 @@
         <div class="sidebar-brand">
             <h2>FLUENTSI <span>Admin</span></h2>
         </div>
-        
+
         <nav class="sidebar-nav">
             <!-- AQUÍ ESTÁ LA MAGIA DEL *ngIf -->
             <a *ngIf="permisos?.inicio" routerLink="/admin/dashboard" routerLinkActive="active">Inicio</a>
-            <a *ngIf="permisos?.instructores" routerLink="/admin/instructores" routerLinkActive="active">Instructores</a>
-            <a *ngIf="permisos?.asignaciones" routerLink="/admin/asignaciones" routerLinkActive="active">Asignaciones</a>
+            <a *ngIf="permisos?.instructores" routerLink="/admin/instructores"
+                routerLinkActive="active">Instructores</a>
+            <a *ngIf="permisos?.asignaciones" routerLink="/admin/asignaciones"
+                routerLinkActive="active">Asignaciones</a>
             <a *ngIf="permisos?.agenda" routerLink="/admin/sesiones" routerLinkActive="active">Agenda de Clases</a>
-            <a *ngIf="permisos?.administradores" routerLink="/admin/administradores" routerLinkActive="active">Administradores</a>
+            <a *ngIf="permisos?.administradores" routerLink="/admin/administradores"
+                routerLinkActive="active">Administradores</a>
             <a *ngIf="permisos?.prospectos" routerLink="/admin/prospectos" routerLinkActive="active">Prospectos</a>
         </nav>
 
         <!-- BOTÓN DE CERRAR SESIÓN -->
         <div style="margin-top: auto; padding: 20px;">
-            <button (click)="cerrarSesion()" style="width: 100%; padding: 10px; background: #e53e3e; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <button (click)="cerrarSesion()"
+                style="width: 100%; padding: 10px; background: #e53e3e; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px;">
                 Cerrar Sesión 🚪
             </button>
         </div>

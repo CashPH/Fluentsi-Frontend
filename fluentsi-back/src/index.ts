@@ -890,5 +890,196 @@ app.delete('/api/admin/sesiones/:id', async (req: Request, res: Response): Promi
   }
 });
 
+// ==========================================
+// RUTAS DE PROGRESO Y QUIZ INTENTOS
+// ==========================================
+
+// GET: Obtener lecciones completadas para una inscripción
+app.get('/api/progreso/:id_inscripcion', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id_inscripcion } = req.params;
+    const [rows]: any = await pool.execute(
+      'SELECT id_leccion, fecha_completado FROM progreso_lecciones WHERE id_inscripcion_curso = ?',
+      [id_inscripcion]
+    );
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('ERROR AL OBTENER PROGRESO:', error);
+    res.status(500).json({ error: 'Error al obtener el progreso' });
+  }
+});
+
+// POST: Marcar lección como completada y recalcular porcentaje
+app.post('/api/progreso', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id_inscripcion_curso, id_leccion } = req.body;
+
+    if (!id_inscripcion_curso || !id_leccion) {
+      return res.status(400).json({ error: 'Se requieren id_inscripcion_curso e id_leccion' });
+    }
+
+    // Insertar si no existe
+    const [existing]: any = await pool.execute(
+      'SELECT id_progreso FROM progreso_lecciones WHERE id_inscripcion_curso = ? AND id_leccion = ?',
+      [id_inscripcion_curso, id_leccion]
+    );
+
+    if (existing.length === 0) {
+      await pool.execute(
+        'INSERT INTO progreso_lecciones (id_inscripcion_curso, id_leccion) VALUES (?, ?)',
+        [id_inscripcion_curso, id_leccion]
+      );
+    }
+
+    // Obtener total de lecciones del curso
+    const [cursoRow]: any = await pool.execute(
+      `SELECT ci.id_curso 
+       FROM cursos_inscripciones ci 
+       WHERE ci.id_inscripcion_curso = ?`,
+      [id_inscripcion_curso]
+    );
+
+    if (cursoRow.length === 0) {
+      return res.status(404).json({ error: 'Inscripción no encontrada' });
+    }
+
+    const id_curso = cursoRow[0].id_curso;
+
+    const [totalLeccionesRows]: any = await pool.execute(
+      'SELECT COUNT(*) AS total FROM lecciones WHERE id_curso = ?',
+      [id_curso]
+    );
+
+    const totalLecciones = totalLeccionesRows[0].total || 1;
+
+    const [completadasRows]: any = await pool.execute(
+      'SELECT COUNT(*) AS completadas FROM progreso_lecciones WHERE id_inscripcion_curso = ?',
+      [id_inscripcion_curso]
+    );
+
+    const completadas = completadasRows[0].completadas;
+    const porcentaje = Math.min(100, Math.round((completadas / totalLecciones) * 100 * 100) / 100);
+
+    const fechaCompletado = porcentaje >= 100 ? new Date() : null;
+
+    await pool.execute(
+      'UPDATE cursos_inscripciones SET porcentaje_avance = ?, fecha_completado = ? WHERE id_inscripcion_curso = ?',
+      [porcentaje, fechaCompletado, id_inscripcion_curso]
+    );
+
+    res.json({
+      success: true,
+      mensaje: 'Progreso actualizado',
+      porcentaje,
+      completadas,
+      totalLecciones
+    });
+
+  } catch (error) {
+    console.error('ERROR AL GUARDAR PROGRESO:', error);
+    res.status(500).json({ error: 'Error al actualizar el progreso' });
+  }
+});
+
+// POST: Registrar intento de quiz
+app.post('/api/quiz/intentos', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id_estudiante, id_examen, id_leccion, id_inscripcion_curso, respuestas_json, puntaje } = req.body;
+
+    if (!id_estudiante || !id_examen || !id_leccion || !id_inscripcion_curso) {
+      return res.status(400).json({ error: 'Faltan campos requeridos para guardar el intento' });
+    }
+
+    const respStr = typeof respuestas_json === 'object' ? JSON.stringify(respuestas_json) : respuestas_json;
+
+    const [result]: any = await pool.execute(
+      `INSERT INTO quiz_intentos 
+       (id_estudiante, id_examen, id_leccion, id_inscripcion_curso, respuestas_json, puntaje)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [id_estudiante, id_examen, id_leccion, id_inscripcion_curso, respStr || '[]', puntaje || 0]
+    );
+
+    res.status(201).json({
+      success: true,
+      mensaje: 'Intento de quiz guardado exitosamente',
+      id_intento: result.insertId
+    });
+  } catch (error) {
+    console.error('ERROR AL GUARDAR INTENTO DE QUIZ:', error);
+    res.status(500).json({ error: 'Error al guardar el intento de quiz' });
+  }
+});
+
+// GET: Obtener intentos de quiz para revisión del profesor
+app.get('/api/teacher/:id/intentos-quiz', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+
+    // Intentar primero con asignación formal
+    let query = `
+      SELECT 
+        qi.*,
+        CONCAT(e.nombre, ' ', e.ap_paterno) AS nombre_alumno,
+        e.nivel_actual,
+        c.titulo AS titulo_curso,
+        l.titulo AS titulo_leccion,
+        ex.titulo AS titulo_examen
+      FROM quiz_intentos qi
+      JOIN estudiantes e ON qi.id_estudiante = e.id_estudiante
+      JOIN lecciones l ON qi.id_leccion = l.id_leccion
+      JOIN examenes ex ON qi.id_examen = ex.id_examen
+      JOIN cursos c ON l.id_curso = c.id_curso
+      JOIN asignaciones_instructor ai ON ai.id_estudiante = e.id_estudiante
+      WHERE ai.id_instructor = ? AND ai.activo = 1
+      ORDER BY qi.fecha_intento DESC
+    `;
+
+    let [rows]: any = await pool.execute(query, [id]);
+
+    // Si el profesor no tiene alumnos asignados directamente aún, devolver todos los intentos para desarrollo/revisión general
+    if (rows.length === 0) {
+      const fallbackQuery = `
+        SELECT 
+          qi.*,
+          CONCAT(e.nombre, ' ', e.ap_paterno) AS nombre_alumno,
+          e.nivel_actual,
+          c.titulo AS titulo_curso,
+          l.titulo AS titulo_leccion,
+          ex.titulo AS titulo_examen
+        FROM quiz_intentos qi
+        JOIN estudiantes e ON qi.id_estudiante = e.id_estudiante
+        JOIN lecciones l ON qi.id_leccion = l.id_leccion
+        JOIN examenes ex ON qi.id_examen = ex.id_examen
+        JOIN cursos c ON l.id_curso = c.id_curso
+        ORDER BY qi.fecha_intento DESC
+      `;
+      [rows] = await pool.execute(fallbackQuery);
+    }
+
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('ERROR AL OBTENER INTENTOS DE QUIZ:', error);
+    res.status(500).json({ error: 'Error al obtener intentos de quiz' });
+  }
+});
+
+// PUT: Guardar retroalimentación/feedback del profesor
+app.put('/api/quiz/intentos/:id/feedback', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const { feedback_texto } = req.body;
+
+    await pool.execute(
+      'UPDATE quiz_intentos SET feedback_texto = ? WHERE id_intento = ?',
+      [feedback_texto || '', id]
+    );
+
+    res.json({ success: true, mensaje: 'Retroalimentación guardada con éxito' });
+  } catch (error) {
+    console.error('ERROR AL GUARDAR FEEDBACK:', error);
+    res.status(500).json({ error: 'Error al guardar retroalimentación' });
+  }
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

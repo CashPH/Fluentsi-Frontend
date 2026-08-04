@@ -8,7 +8,6 @@
                 <li><a routerLink="/agenda">Mi agenda</a></li>
                 <li><a routerLink="/cursos">Cursos</a></li>
                 <li><a routerLink="/revisiones" class="active">Revisiones</a></li>
-             
                 <li><a routerLink="/calificaciones-instructor">Calificaciones</a></li>
             </ul>
         </div>
@@ -22,69 +21,86 @@
     <main class="main-content">
         <div class="revisions-layout">
 
-        
+            <!-- LIST PANEL -->
             <div class="revisions-panel">
                 
                 <div class="filters-bar">
-                    <select class="filter-select">
-                        <option value="">Tipo (Exámenes)</option>
-                         <option value="">Tipo (Tarea)</option>
-                    </select>
-
-                    <select class="filter-select">
-                        <option value="">Alumno</option>
+                    <select class="filter-select" [(ngModel)]="filtroAlumno">
+                        <option value="">Todos los Alumnos</option>
+                        <option *ngFor="let nombre of alumnosUnicos" [value]="nombre">{{ nombre }}</option>
                     </select>
 
                     <div class="search-input-wrapper">
                         <span class="search-icon">🔍</span>
-                        <input type="text" placeholder="Busca">
+                        <input type="text" placeholder="Buscar..." [(ngModel)]="filtroTexto">
                     </div>
                 </div>
 
-              
-                <div class="items-list">
-                    <div class="item-card" *ngFor="let item of revisiones">
-                        <img [src]="item.img" alt="Alumna" class="student-img">
+                <!-- CARGANDO O LISTA VACÍA -->
+                <div *ngIf="cargando" class="loading-box">
+                    <p>Cargando intentos de exámen...</p>
+                </div>
+
+                <div *ngIf="!cargando && intentosFiltrados.length === 0" class="empty-box">
+                    <p>No se encontraron revisiones pendientes.</p>
+                </div>
+
+                <!-- LISTA DE INTENTOS -->
+                <div class="items-list" *ngIf="!cargando && intentosFiltrados.length > 0">
+                    <div class="item-card" 
+                         *ngFor="let item of intentosFiltrados"
+                         [class.selected-card]="revisionSeleccionada?.id_intento === item.id_intento">
+                        <img src="/monit.png" alt="Alumno" class="student-img">
                         <div class="card-info">
-                            <h4>{{ item.nombre }} - {{ item.tipo }}</h4>
-                            <span class="level-badge" [ngClass]="{
-                                'level-b2': item.nivel === 'B2',
-                                'level-a1': item.nivel === 'A1',
-                                'level-a2': item.nivel === 'A2'
-                            }">{{ item.nivel }}</span>
+                            <h4>{{ item.nombre_alumno }}</h4>
+                            <p class="quiz-info-text">
+                                <strong>{{ item.titulo_curso }}</strong> — {{ item.titulo_examen || item.titulo_leccion }}
+                            </p>
+                            <div class="meta-row">
+                                <span class="level-badge">{{ item.nivel_actual || 'A1' }}</span>
+                                <span class="score-badge" [class.passed]="item.puntaje >= 60">
+                                    Puntaje: {{ item.puntaje }}%
+                                </span>
+                                <span class="feedback-badge" *ngIf="item.feedback_texto">✓ Con Feedback</span>
+                            </div>
                         </div>
                         <button class="check-btn" (click)="seleccionarRevision(item)">
-                            Check Answers
+                            {{ revisionSeleccionada?.id_intento === item.id_intento ? 'Cerrar' : 'Check Answers' }}
                         </button>
                     </div>
                 </div>
 
             </div>
 
-
+            <!-- FEEDBACK PANEL -->
             <div class="feedback-panel" *ngIf="revisionSeleccionada">
-                
-                <div class="feedback-group">
-                    <label>Pregunta del examen</label>
-                    <div class="read-only-box">
-                        {{ revisionSeleccionada?.pregunta }}
+                <h3>Revisión de {{ revisionSeleccionada.nombre_alumno }}</h3>
+                <p class="subtitle">{{ revisionSeleccionada.titulo_examen }} ({{ revisionSeleccionada.puntaje }}%)</p>
+
+                <!-- PREGUNTAS Y RESPUESTAS REALES -->
+                <div class="responses-container">
+                    <div class="question-response-box" *ngFor="let resp of respuestasParsed; let i = index">
+                        <label class="q-label">Pregunta {{ i + 1 }}: {{ resp.pregunta_texto }}</label>
+                        <div class="answer-box" [class.answer-correct]="resp.es_correcta" [class.answer-wrong]="!resp.es_correcta">
+                            <span class="status-icon">{{ resp.es_correcta ? '✓' : '✗' }}</span>
+                            <span>{{ resp.opcion_texto_seleccionada }}</span>
+                        </div>
                     </div>
                 </div>
 
+                <!-- RETROALIMENTACION -->
                 <div class="feedback-group">
-                    <label>Respuesta del alumno</label>
-                    <div class="read-only-box">
-                        {{ revisionSeleccionada?.respuesta }}
-                    </div>
+                    <label>Caja de Feedback para el alumno</label>
+                    <textarea class="feedback-input" 
+                              rows="4" 
+                              placeholder="Escribe tu retroalimentación para el alumno..." 
+                              [(ngModel)]="feedbackTexto"></textarea>
                 </div>
 
-                <div class="feedback-group">
-                    <label>Caja de Feedback</label>
-                    <textarea class="feedback-input" rows="4" placeholder="Escribe tu retroalimentación..."></textarea>
-                </div>
-
-                <button class="send-btn" (click)="enviarRetroalimentacion()">
-                    Enviar Retroalimentación
+                <button class="send-btn" 
+                        (click)="enviarRetroalimentacion()"
+                        [disabled]="enviandoFeedback">
+                    {{ enviandoFeedback ? 'Enviando...' : 'Enviar Retroalimentación' }}
                 </button>
 
             </div>

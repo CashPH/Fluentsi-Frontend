@@ -1,81 +1,119 @@
 <div class="student-container">
+    <!-- NAVBAR -->
     <nav class="navbar">
         <div class="nav-left">
-            <img src="logo.png" alt="Logo" class="logo">
+            <img src="/logo.png" alt="Logo" class="logo">
             <ul class="nav-links">
                 <li><a href="javascript:void(0)" class="active">Inicio</a></li>
                 <li><a href="javascript:void(0)" (click)="goToCursosStudent()">Cursos</a></li>
-               
             </ul>
         </div>
         <div class="nav-right">
             <button class="logout-btn" (click)="logout()">Log out 🚪</button>
-            <img src="monito.png" alt="Mascot" class="nav-mascot">
+            <img src="/monito.png" alt="Mascot" class="nav-mascot">
         </div>
     </nav>
 
+    <!-- MAIN CONTENT -->
     <main class="main-content">
-        <h1 class="welcome-title">Bienvenido &lt;Nombre alumno&gt;!</h1>
+        <h1 class="welcome-title">¡Bienvenido, {{ nombreCompleto }}!</h1>
+
+        <!-- TOAST DE ÉXITO -->
+        <div class="success-toast" *ngIf="mensajeExito">
+            {{ mensajeExito }}
+        </div>
 
         <div class="dashboard-grid">
 
+            <!-- SECCIÓN IZQUIERDA: MI APRENDIZAJE -->
             <section class="learning-section">
                 <h2 class="section-title">Mi Aprendizaje</h2>
+                
+                <!-- STATS CARDS -->
                 <div class="stats-row">
                     <div class="stat-card gray">
                         <span class="icon">📖</span>
                         <div>
-                            <p class="stat-num">3</p>
-                            <p class="stat-label">Total de cursos</p>
+                            <p class="stat-num">{{ cursosActivos.length }}</p>
+                            <p class="stat-label">Cursos en curso</p>
                         </div>
                     </div>
                     <div class="stat-card yellow">
                         <span class="icon">📊</span>
                         <div>
-                            <p class="stat-num">45%</p>
-                            <p class="stat-label">Completo</p>
+                            <p class="stat-num">{{ promedioProgreso }}%</p>
+                            <p class="stat-label">Progreso promedio</p>
                         </div>
                     </div>
                 </div>
 
+                <!-- TUS CURSOS EN CURSO -->
                 <div class="my-courses-list">
-                    <h2 class="section-title">Tus cursos</h2>
+                    <h2 class="section-title">Tus cursos inscritos</h2>
+
+                    <div *ngIf="cargando" class="empty-courses">
+                        Cargando tus cursos...
+                    </div>
+
+                    <div *ngIf="!cargando && cursosActivos.length === 0" class="empty-courses">
+                        Aún no estás inscrito en ningún curso. ¡Explora los cursos disponibles a la derecha para comenzar!
+                    </div>
+
                     <div class="course-progress-card" *ngFor="let c of cursosActivos">
                         <div class="course-info">
                             <h3>{{ c.titulo }}</h3>
                             <div class="course-meta">
-                                <span>📄 2</span>
-                                <span>🕒 3h</span>
-                                <span>👤 1</span>
-                                <span class="lvl">{{ c.nivel }}</span>
+                                <span>📖 Idioma: {{ c.id_idioma === 2 ? 'Francés' : 'Inglés' }}</span>
+                                <span class="lvl">{{ displayNivel(c.nivel_recomendado) }}</span>
                             </div>
                         </div>
                         <div class="progress-container">
                             <div class="progress-bar">
-                                <div class="progress-fill" [style.width.%]="c.progreso"></div>
+                                <div class="progress-fill" [style.width.%]="c.porcentaje_avance || 0"></div>
                             </div>
-                            <span class="prog-text">{{ c.progreso }}%</span>
+                            <span class="prog-text">{{ c.porcentaje_avance || 0 }}%</span>
                         </div>
-                        <a href="javascript:void(0)" class="continue-link" (click)="goToCursos()">Continue Learning</a>
+                        <a href="javascript:void(0)" class="continue-link" (click)="goToCursoViewer(c.id_curso)">
+                            Continuar Curso →
+                        </a>
                     </div>
                 </div>
             </section>
 
+            <!-- SECCIÓN DERECHA: MÁS CURSOS DISPONIBLES -->
             <aside class="available-section">
                 <h2 class="section-title">Más cursos disponibles</h2>
-                <div class="available-grid">
+
+                <div *ngIf="cargando" class="empty-courses">
+                    Cargando catálogo...
+                </div>
+
+                <div *ngIf="!cargando && cursosDisponibles.length === 0" class="empty-courses">
+                    ¡Felicidades! Ya estás inscrito en todos los cursos disponibles.
+                </div>
+
+                <div class="available-grid" *ngIf="!cargando && cursosDisponibles.length > 0">
                     <div class="course-card-mini" *ngFor="let d of cursosDisponibles">
                         <div class="img-wrapper">
-                            <img [src]="d.img" alt="Course">
-                            <img src="logo-blanc.jpg"class="card-badge">
+                            <img [src]="d.id_idioma === 2 ? '/frances.jpg' : '/ingles.jpg'" 
+                                 alt="Curso" 
+                                 onerror="this.src='/logo.png'">
                         </div>
                         <div class="mini-body">
                             <h4>{{ d.titulo }}</h4>
-                            <span class="lvl-tag">{{ d.nivel }}</span>
-                            <div class="mini-stats">
-                                <span>📄 2</span> <span>🕒 3h</span> <span>👤 1</span>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <span class="lvl-tag">{{ displayNivel(d.nivel_recomendado) }}</span>
+                                <span class="precio-badge" *ngIf="d.es_gratuito === 1">Gratis</span>
+                                <span class="precio-badge" *ngIf="d.es_gratuito === 0">${{ d.precio }}</span>
                             </div>
-                            <a href="javascript:void(0)" class="start-link" (click)="goToCursos()">Start Learning</a>
+                            <p style="font-size: 0.8rem; color: #555; margin-top: 0.3rem;">
+                                {{ d.descripcion || 'Sin descripción' }}
+                            </p>
+                            <button class="inscribirse-btn" 
+                                    (click)="inscribirse(d.id_curso)" 
+                                    [disabled]="inscribiendoCursoId === d.id_curso">
+                                {{ inscribiendoCursoId === d.id_curso ? 'Inscribiendo...' : 'Inscribirme' }}
+                            </button>
                         </div>
                     </div>
                 </div>

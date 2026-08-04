@@ -13,55 +13,56 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./student-dashboard.css']
 })
 export class StudentDashboardComponent implements OnInit, OnDestroy {
-student() {
-throw new Error('Method not implemented.');
-}
-goToAgenda() {
-throw new Error('Method not implemented.');
-}
-goToRevisions() {
-throw new Error('Method not implemented.');
-}
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
-  nombreCompleto: string = '';
+  nombreCompleto: string = 'Estudiante';
   userId: number | null = null;
   private userSubscription: Subscription | null = null;
   private datosYaCargados = false;
 
-  // Stats
   totalCursos: number = 0;
   promedioProgreso: number = 0;
 
-  // Cursos inscritos (con progreso)
   cursosActivos: any[] = [];
 
-  // Cursos disponibles para inscribirse (los que no tiene)
   cursosDisponibles: any[] = [];
 
-  // UI states
   cargando: boolean = true;
   inscribiendoCursoId: number | null = null;
   mensajeExito: string = '';
 
-  constructor(private authService: AuthService, private router: Router) { }
-
   ngOnInit(): void {
-    this.userSubscription = this.authService.user$.subscribe(user => {
-      if (user) {
-        const nombre = user.nombre || '';
-        const apPaterno = user.ap_paterno || '';
-        this.nombreCompleto = apPaterno ? `${nombre} ${apPaterno}` : nombre;
-        this.userId = Number(user.userId ?? user.id_estudiante ?? user.id ?? null) || null;
-        this.cdr.detectChanges();
+    const user = this.authService.getUser();
+    if (user) {
+      this.setUserData(user);
+    }
 
-        if (!this.datosYaCargados) {
-          this.datosYaCargados = true;
-          this.cargarDatos();
-        }
+    this.userSubscription = this.authService.user$.subscribe(u => {
+      if (u) {
+        this.setUserData(u);
       }
     });
+
+    if (this.userId) {
+      this.cargarDatos();
+    } else {
+      setTimeout(() => {
+        if (!this.datosYaCargados) {
+          this.cargarDatos();
+        }
+      }, 300);
+    }
+  }
+
+  private setUserData(user: any): void {
+    const nombre = user.nombre || '';
+    const apPaterno = user.ap_paterno || '';
+    this.nombreCompleto = apPaterno ? `${nombre} ${apPaterno}` : nombre || 'Estudiante';
+    this.userId = Number(user.userId ?? user.id_estudiante ?? user.id ?? null) || null;
+    this.cdr.detectChanges();
   }
 
   ngOnDestroy(): void {
@@ -70,6 +71,7 @@ throw new Error('Method not implemented.');
 
   cargarDatos(): void {
     this.cargando = true;
+    this.datosYaCargados = true;
     this.cdr.detectChanges();
 
     let todosCargados = false;
@@ -96,7 +98,7 @@ throw new Error('Method not implemented.');
       }
     };
 
-    // Cargar todos los cursos
+
     this.http.get<any[]>('http://localhost:4000/api/cursos').subscribe({
       next: (data) => {
         todosLista = Array.isArray(data) ? data : [];
@@ -111,7 +113,6 @@ throw new Error('Method not implemented.');
       }
     });
 
-    // Cargar inscripciones del estudiante
     if (this.userId && this.userId > 0) {
       this.http.get<any[]>(`http://localhost:4000/api/inscripciones/${this.userId}`).subscribe({
         next: (data) => {
@@ -134,7 +135,10 @@ throw new Error('Method not implemented.');
   }
 
   inscribirse(idCurso: number): void {
-    if (!this.userId) return;
+    if (!this.userId) {
+      alert('Debes iniciar sesión como estudiante para inscribirte.');
+      return;
+    }
     this.inscribiendoCursoId = idCurso;
     this.cdr.detectChanges();
 
@@ -145,7 +149,6 @@ throw new Error('Method not implemented.');
       next: () => {
         this.mensajeExito = '¡Te has inscrito al curso exitosamente!';
         this.inscribiendoCursoId = null;
-        this.datosYaCargados = false;
         this.cargarDatos();
         this.cdr.detectChanges();
         setTimeout(() => {
@@ -161,19 +164,19 @@ throw new Error('Method not implemented.');
     });
   }
 
+  displayNivel(nivel: string): string {
+    if (!nivel) return 'A1';
+    return nivel === 'C2' ? 'C+' : nivel;
+  }
+
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
 
-  goToCursos(): void {
-    this.router.navigate(['/cursos']);
-  }
-
   goToCursosStudent(): void {
     this.router.navigate(['/cursos-student']);
   }
-
 
   goToCursoViewer(idCurso: number): void {
     this.router.navigate(['/curso', idCurso]);
