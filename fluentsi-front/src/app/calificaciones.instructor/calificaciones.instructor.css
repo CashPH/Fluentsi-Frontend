@@ -8,7 +8,7 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    font-family: sans-serif;
+    font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .navbar {
@@ -27,7 +27,7 @@
 }
 
 .logo {
-    height: 50px;
+    height: 70px;
 }
 
 .nav-links {

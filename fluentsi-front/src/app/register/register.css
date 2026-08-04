@@ -15,7 +15,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 3rem;
+    padding: 0.50rem 3rem;
     background-color: #f8f9fa;
 }
 
@@ -26,7 +26,7 @@
 }
 
 .logo {
-    height: 45px;
+    height: 70px;
 }
 
 .nav-links {
@@ -94,7 +94,7 @@
 }
 
 .mascot {
-    height: 100px;
+    height: 190px;
     margin-bottom: 1.5rem;
 }
 

@@ -27,7 +27,7 @@
 }
 
 .logo {
-    height: 45px;
+    height: 70px;
 }
 
 .nav-links {
@@ -49,10 +49,15 @@
     text-underline-offset: 5px;
     color: #1712a4;
 }
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
 
 .nav-mascot {
-    height: 120px;
-    margin-top: 40px;
+    height: 235px;
+    margin-top: 50px;
 }
 
 .main-content {
