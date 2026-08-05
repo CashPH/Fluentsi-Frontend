@@ -16,7 +16,8 @@
     </nav>
 
     <main class="main-content">
-        <div class="search-bar-container" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div class="search-bar-container"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
             <div class="search-input-wrapper">
                 <span class="search-icon">🔍</span>
                 <input type="text" placeholder="Busca un curso" [(ngModel)]="textoBusqueda">
@@ -33,20 +34,23 @@
                 <div class="filter-group">
                     <h3>Nivel</h3>
                     <label *ngFor="let nivel of niveles">
-                        <input type="checkbox" [checked]="nivelesSeleccionados.has(nivel)" (change)="toggleNivel(nivel)"> {{ nivel }}
+                        <input type="checkbox" [checked]="nivelesSeleccionados.has(nivel)"
+                            (change)="toggleNivel(nivel)"> {{ nivel }}
                     </label>
                 </div>
 
                 <div class="filter-group">
                     <h3>Etiqueta</h3>
                     <label *ngFor="let etiqueta of etiquetas">
-                        <input type="checkbox" [checked]="etiquetasSeleccionadas.has(etiqueta)" (change)="toggleEtiqueta(etiqueta)"> {{ etiqueta }}
+                        <input type="checkbox" [checked]="etiquetasSeleccionadas.has(etiqueta)"
+                            (change)="toggleEtiqueta(etiqueta)"> {{ etiqueta }}
                     </label>
                 </div>
             </aside>
 
             <section class="courses-grid">
-                <div class="course-card" *ngFor="let curso of cursosFiltrados" (click)="gestionarCurso(curso.id_curso)" style="cursor: pointer;">
+                <div class="course-card" *ngFor="let curso of cursosFiltrados" (click)="gestionarCurso(curso.id_curso)"
+                    style="cursor: pointer;">
                     <div class="card-image-container">
                         <img src="assets/curso1.jpg" alt="Course Image" class="course-img">
                         <img src="logo-blanco.jpg" alt="Badge" class="card-badge">
@@ -59,7 +63,8 @@
                             <span>🕒 {{ curso.es_gratuito ? 'Gratis' : '$' + curso.precio }}</span>
                         </div>
                         <a class="start-link" *ngIf="!isStudent">Gestionar Curso ⚙️</a>
-                        <a class="start-link" *ngIf="isStudent && estaInscrito(curso.id_curso)">Acceder al contenido 📖</a>
+                        <a class="start-link" *ngIf="isStudent && estaInscrito(curso.id_curso)">Acceder al contenido
+                            📖</a>
                         <a class="start-link" *ngIf="isStudent && !estaInscrito(curso.id_curso)">Inscribirse 🚀</a>
                     </div>
                 </div>

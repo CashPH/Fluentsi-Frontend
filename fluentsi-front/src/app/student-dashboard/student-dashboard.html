@@ -28,7 +28,7 @@
             <!-- SECCIÓN IZQUIERDA: MI APRENDIZAJE -->
             <section class="learning-section">
                 <h2 class="section-title">Mi Aprendizaje</h2>
-                
+
                 <!-- STATS CARDS -->
                 <div class="stats-row">
                     <div class="stat-card gray">
@@ -56,7 +56,8 @@
                     </div>
 
                     <div *ngIf="!cargando && cursosActivos.length === 0" class="empty-courses">
-                        Aún no estás inscrito en ningún curso. ¡Explora los cursos disponibles a la derecha para comenzar!
+                        Aún no estás inscrito en ningún curso. ¡Explora los cursos disponibles a la derecha para
+                        comenzar!
                     </div>
 
                     <div class="course-progress-card" *ngFor="let c of cursosActivos">
@@ -95,9 +96,8 @@
                 <div class="available-grid" *ngIf="!cargando && cursosDisponibles.length > 0">
                     <div class="course-card-mini" *ngFor="let d of cursosDisponibles">
                         <div class="img-wrapper">
-                            <img [src]="d.id_idioma === 2 ? '/frances.jpg' : '/ingles.jpg'" 
-                                 alt="Curso" 
-                                 onerror="this.src='/logo.png'">
+                            <img [src]="d.id_idioma === 2 ? '/frances.jpg' : '/ingles.jpg'" alt="Curso"
+                                onerror="this.src='/logo.png'">
                         </div>
                         <div class="mini-body">
                             <h4>{{ d.titulo }}</h4>
@@ -109,9 +109,8 @@
                             <p style="font-size: 0.8rem; color: #555; margin-top: 0.3rem;">
                                 {{ d.descripcion || 'Sin descripción' }}
                             </p>
-                            <button class="inscribirse-btn" 
-                                    (click)="inscribirse(d.id_curso)" 
-                                    [disabled]="inscribiendoCursoId === d.id_curso">
+                            <button class="inscribirse-btn" (click)="inscribirse(d.id_curso)"
+                                [disabled]="inscribiendoCursoId === d.id_curso">
                                 {{ inscribiendoCursoId === d.id_curso ? 'Inscribiendo...' : 'Inscribirme' }}
                             </button>
                         </div>
