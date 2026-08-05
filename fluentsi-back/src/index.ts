@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import bcrypt from 'bcryptjs'; // Asegúrate de tener este import para la encriptación
+import bcrypt from 'bcryptjs'; 
 
 import authRouter from './routes/auth';
 import { verifyToken } from './middleware/auth';
@@ -25,12 +25,12 @@ app.use(cookieParser());
 
 app.use('/api/auth', authRouter);
 
-// Endpoint protegido
+
 app.get('/api/protected', verifyToken, (req, res) => {
   res.json({ message: 'This is a protected route', user: (req as any).user });
 });
 
-// Endpoint de verificación
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'Server is running' });
 });
@@ -307,20 +307,129 @@ app.get('/api/admin/dashboard/metrics', async (req: Request, res: Response): Pro
   }
 });
 
-// RUTAS NUEVAS PARA PROSPECTOS
-app.get('/api/admin/dashboard/prospectos-recientes', async (req: Request, res: Response): Promise<any> => {
+// ==========================================
+// RUTAS CRM: PROSPECTOS Y GRUPOS DE DIFUSIÓN
+// ==========================================
+
+
+app.get('/api/admin/prospectos', async (req: Request, res: Response): Promise<any> => {
   try {
-    const [prospectos]: any = await pool.execute(
-      'SELECT id_prospecto, nombre, ap_paterno, telefono, estado, fecha_registro FROM prospectos ORDER BY fecha_registro DESC LIMIT 5'
+    const query = `
+      SELECT p.*, 
+             GROUP_CONCAT(g.id_grupo_difusion) as grupos_ids,
+             GROUP_CONCAT(g.nombre_grupo) as grupos_nombres
+      FROM prospectos p
+      LEFT JOIN prospectos_grupos pg ON p.id_prospecto = pg.id_prospecto
+      LEFT JOIN grupos_difusion g ON pg.id_grupo_difusion = g.id_grupo_difusion
+      GROUP BY p.id_prospecto
+      ORDER BY p.fecha_registro DESC
+    `;
+    const [rows] = await pool.execute(query);
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('ERROR SQL AL OBTENER PROSPECTOS:', error);
+    res.status(500).json({ error: 'Error al obtener prospectos' });
+  }
+});
+
+
+app.get('/api/admin/grupos-difusion', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const query = `
+      SELECT g.*, COUNT(pg.id_prospecto) as total_prospectos 
+      FROM grupos_difusion g
+      LEFT JOIN prospectos_grupos pg ON g.id_grupo_difusion = pg.id_grupo_difusion
+      GROUP BY g.id_grupo_difusion
+      ORDER BY g.fecha_creacion ASC
+    `;
+    const [rows] = await pool.execute(query);
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('ERROR SQL AL OBTENER GRUPOS:', error);
+    res.status(500).json({ error: 'Error al obtener grupos' });
+  }
+});
+
+
+app.post('/api/admin/grupos-difusion', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { nombre_grupo, descripcion } = req.body;
+    const [result] = await pool.execute(
+      'INSERT INTO grupos_difusion (nombre_grupo, descripcion) VALUES (?, ?)',
+      [nombre_grupo, descripcion || '']
+    );
+    res.status(201).json({ success: true, id_grupo: (result as any).insertId });
+  } catch (error) {
+    console.error('ERROR SQL AL CREAR GRUPO:', error);
+    res.status(500).json({ error: 'Error al crear grupo' });
+  }
+});
+
+
+app.post('/api/admin/prospectos-grupos', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id_prospecto, id_grupo_difusion } = req.body;
+    
+    
+    const [existing]: any = await pool.execute(
+      'SELECT * FROM prospectos_grupos WHERE id_prospecto = ? AND id_grupo_difusion = ?',
+      [id_prospecto, id_grupo_difusion]
     );
 
-    res.json({
-      success: true,
-      data: prospectos
-    });
+    if (existing.length > 0) {
+      return res.status(400).json({ error: 'El prospecto ya está en este grupo' });
+    }
+
+    await pool.execute(
+      'INSERT INTO prospectos_grupos (id_prospecto, id_grupo_difusion) VALUES (?, ?)',
+      [id_prospecto, id_grupo_difusion]
+    );
+    res.status(201).json({ success: true, mensaje: 'Prospecto agregado al grupo' });
   } catch (error) {
-    console.error('ERROR SQL AL CARGAR PROSPECTOS RECIENTES:', error);
-    res.status(500).json({ error: 'Error al obtener los prospectos recientes' });
+    console.error('ERROR SQL AL ASIGNAR GRUPO:', error);
+    res.status(500).json({ error: 'Error al asignar al grupo' });
+  }
+});
+
+
+app.post('/api/web/prospectos', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { nombre, ap_paterno, correo_electronico, telefono, ciudad, mensaje } = req.body;
+    
+    const [result]: any = await pool.execute(
+      'INSERT INTO prospectos (nombre, ap_paterno, correo_electronico, telefono, ciudad, mensaje, estado) VALUES (?, ?, ?, ?, ?, ?, "Pendiente")',
+      [nombre, ap_paterno, correo_electronico, telefono, ciudad, mensaje]
+    );
+    
+    const id_prospecto = result.insertId;
+
+    await pool.execute(
+      'INSERT INTO prospectos_grupos (id_prospecto, id_grupo_difusion) VALUES (?, 1)',
+      [id_prospecto]
+    );
+
+    res.status(201).json({ success: true, mensaje: 'Prospecto registrado y asignado a Nuevos' });
+  } catch (error) {
+    console.error('ERROR SQL AL REGISTRAR PROSPECTO:', error);
+    res.status(500).json({ error: 'Error al registrar prospecto' });
+  }
+});
+
+
+app.delete('/api/admin/grupos-difusion/:id', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+    
+    
+    if (id === '1') {
+      return res.status(400).json({ error: 'No puedes borrar el grupo default (Nuevos)' });
+    }
+
+    await pool.execute('DELETE FROM grupos_difusion WHERE id_grupo_difusion = ?', [id]);
+    res.json({ success: true, mensaje: 'Grupo eliminado con éxito' });
+  } catch (error) {
+    console.error('ERROR SQL AL ELIMINAR GRUPO:', error);
+    res.status(500).json({ error: 'Error al eliminar el grupo' });
   }
 });
 
@@ -387,7 +496,7 @@ app.post('/api/admin/instructores', async (req: Request, res: Response): Promise
   }
 });
 
-// Actualizar Instructor (Editar)
+
 app.put('/api/admin/instructores/:id', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
@@ -407,7 +516,7 @@ app.put('/api/admin/instructores/:id', async (req: Request, res: Response): Prom
   }
 });
 
-// Eliminar Instructor
+
 app.delete('/api/admin/instructores/:id', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
@@ -425,7 +534,7 @@ app.delete('/api/admin/instructores/:id', async (req: Request, res: Response): P
 
 app.get('/api/admin/administradores', async (req: Request, res: Response): Promise<any> => {
   try {
-    // Agregamos 'privilegios' a la consulta
+    
     const [rows] = await pool.execute(
       'SELECT id_admin, nombre, ap_paterno, ap_materno, usuario AS correo, correo_recuperacion, privilegios, 1 AS activo FROM administradores ORDER BY id_admin DESC'
     );
@@ -440,11 +549,11 @@ app.post('/api/admin/administradores', async (req: Request, res: Response): Prom
   try {
     const { nombre, ap_paterno, ap_materno, correo, correo_recuperacion, password, privilegios } = req.body;
     
-    // ENCRIPTAMOS LA CONTRASEÑA ANTES DE GUARDARLA
+    
     const salt = await bcrypt.genSalt(10);
     const hashed = await bcrypt.hash(password || '123456', salt);
 
-    // Aseguramos que los privilegios se guarden como string JSON
+    
     const privilegiosJSON = typeof privilegios === 'object' ? JSON.stringify(privilegios) : privilegios;
 
     const query = `INSERT INTO administradores (nombre, ap_paterno, ap_materno, usuario, correo_recuperacion, password, privilegios) VALUES (?, ?, ?, ?, ?, ?, ?)`;
@@ -454,7 +563,7 @@ app.post('/api/admin/administradores', async (req: Request, res: Response): Prom
       ap_materno || null, 
       correo, 
       correo_recuperacion || null, 
-      hashed, // AQUI MANDAMOS LA CONTRASEÑA YA ENCRIPTADA
+      hashed, 
       privilegiosJSON
     ]);
 
@@ -470,10 +579,10 @@ app.put('/api/admin/administradores/:id', async (req: Request, res: Response): P
     const { id } = req.params;
     const { nombre, ap_paterno, ap_materno, correo, correo_recuperacion, privilegios, password } = req.body;
     
-    // Aseguramos que los privilegios se guarden como string JSON
+    
     const privilegiosJSON = typeof privilegios === 'object' ? JSON.stringify(privilegios) : privilegios;
 
-    // Si escribiste una contraseña en el panel, la encriptamos y la guardamos
+    
     if (password && password.trim() !== '') {
       const salt = await bcrypt.genSalt(10);
       const hashed = await bcrypt.hash(password, salt);
@@ -483,7 +592,7 @@ app.put('/api/admin/administradores/:id', async (req: Request, res: Response): P
         [nombre, ap_paterno, ap_materno || null, correo, correo_recuperacion || null, privilegiosJSON, hashed, id]
       );
     } else {
-      // Si dejaste la contraseña en blanco, actualiza todo MENOS la contraseña
+      
       await pool.execute(
         'UPDATE administradores SET nombre = ?, ap_paterno = ?, ap_materno = ?, usuario = ?, correo_recuperacion = ?, privilegios = ? WHERE id_admin = ?', 
         [nombre, ap_paterno, ap_materno || null, correo, correo_recuperacion || null, privilegiosJSON, id]
@@ -497,7 +606,7 @@ app.put('/api/admin/administradores/:id', async (req: Request, res: Response): P
   }
 });
 
-// El DELETE se queda exactamente igual
+
 app.delete('/api/admin/administradores/:id', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
@@ -513,7 +622,7 @@ app.delete('/api/admin/administradores/:id', async (req: Request, res: Response)
 // RUTAS DE INSCRIPCIONES
 // ==========================================
 
-// GET: Cursos inscritos de un estudiante (con progreso)
+
 app.get('/api/inscripciones/:id_estudiante', async (req: Request, res: Response) => {
   try {
     const { id_estudiante } = req.params;
@@ -542,7 +651,7 @@ app.get('/api/inscripciones/:id_estudiante', async (req: Request, res: Response)
   }
 });
 
-// POST: Inscribir a un estudiante en un curso
+
 app.post('/api/inscripciones', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id_estudiante, id_curso } = req.body;
@@ -550,7 +659,7 @@ app.post('/api/inscripciones', async (req: Request, res: Response): Promise<any>
       return res.status(400).json({ error: 'Se requiere id_estudiante e id_curso' });
     }
 
-    // Verificar si ya está inscrito
+    
     const [existing]: any = await pool.execute(
       'SELECT id_inscripcion_curso FROM cursos_inscripciones WHERE id_estudiante = ? AND id_curso = ?',
       [id_estudiante, id_curso]
@@ -579,7 +688,7 @@ app.post('/api/inscripciones', async (req: Request, res: Response): Promise<any>
 // RUTAS DEL PROFESOR (TEACHER)
 // ==========================================
 
-// Stats del profesor: alumnos asignados + sesiones de la semana
+
 app.get('/api/teacher/:id/stats', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
@@ -589,7 +698,7 @@ app.get('/api/teacher/:id/stats', async (req: Request, res: Response): Promise<a
       [id]
     );
 
-    // Sesiones de esta semana
+    
     const [sesiones]: any = await pool.execute(
       `SELECT COUNT(*) AS total FROM sesiones_clases 
        WHERE id_instructor = ? 
@@ -609,7 +718,7 @@ app.get('/api/teacher/:id/stats', async (req: Request, res: Response): Promise<a
   }
 });
 
-// Próxima sesión del profesor
+
 app.get('/api/teacher/:id/next-session', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
@@ -643,7 +752,7 @@ app.get('/api/teacher/:id/next-session', async (req: Request, res: Response): Pr
   }
 });
 
-// Sesiones de la semana del profesor (para la agenda)
+
 app.get('/api/teacher/:id/sesiones', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
@@ -656,7 +765,7 @@ app.get('/api/teacher/:id/sesiones', async (req: Request, res: Response): Promis
       whereExtra = 'AND s.fecha BETWEEN ? AND ?';
       params.push(fecha_inicio, fecha_fin);
     } else {
-      // Por defecto: semana actual (Lunes a Domingo)
+      
       whereExtra = `AND s.fecha BETWEEN 
         DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY) 
         AND DATE_ADD(DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), INTERVAL 6 DAY)`;
@@ -691,7 +800,7 @@ app.get('/api/teacher/:id/sesiones', async (req: Request, res: Response): Promis
 // RUTAS DE ASIGNACIONES (ADMIN)
 // ==========================================
 
-// GET: Todas las asignaciones con info de instructor y alumno
+
 app.get('/api/admin/asignaciones', async (req: Request, res: Response): Promise<any> => {
   try {
     const [rows] = await pool.execute(
@@ -713,7 +822,7 @@ app.get('/api/admin/asignaciones', async (req: Request, res: Response): Promise<
   }
 });
 
-// GET: Alumnos de un instructor específico
+
 app.get('/api/admin/asignaciones/instructor/:id', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
@@ -735,7 +844,7 @@ app.get('/api/admin/asignaciones/instructor/:id', async (req: Request, res: Resp
   }
 });
 
-// POST: Asignar un alumno a un instructor
+
 app.post('/api/admin/asignaciones', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id_instructor, id_estudiante } = req.body;
@@ -744,7 +853,7 @@ app.post('/api/admin/asignaciones', async (req: Request, res: Response): Promise
       return res.status(400).json({ error: 'Se requieren id_instructor e id_estudiante' });
     }
 
-    // Verificar si ya existe
+    
     const [existing]: any = await pool.execute(
       'SELECT id_asignacion FROM asignaciones_instructor WHERE id_instructor = ? AND id_estudiante = ? AND activo = 1',
       [id_instructor, id_estudiante]
@@ -770,7 +879,7 @@ app.post('/api/admin/asignaciones', async (req: Request, res: Response): Promise
   }
 });
 
-// DELETE: Desasignar alumno de instructor
+
 app.delete('/api/admin/asignaciones/:id', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
@@ -786,7 +895,7 @@ app.delete('/api/admin/asignaciones/:id', async (req: Request, res: Response): P
 // RUTAS DE SESIONES DE CLASE (ADMIN)
 // ==========================================
 
-// GET: Todas las sesiones (con listado de alumnos de cada sesión)
+
 app.get('/api/admin/sesiones', async (req: Request, res: Response): Promise<any> => {
   try {
     const [rows] = await pool.execute(
@@ -810,7 +919,7 @@ app.get('/api/admin/sesiones', async (req: Request, res: Response): Promise<any>
   }
 });
 
-// POST: Crear sesión de clase (con uno o más alumnos)
+
 app.post('/api/admin/sesiones', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id_instructor, estudiantes_ids, fecha, hora, objetivo, notas } = req.body;
@@ -847,7 +956,7 @@ app.post('/api/admin/sesiones', async (req: Request, res: Response): Promise<any
   }
 });
 
-// PUT: Editar sesión (cambiar hora, fecha, instructor, objetivo, notas, estado o agregar/quitar alumnos)
+
 app.put('/api/admin/sesiones/:id', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
@@ -878,7 +987,7 @@ app.put('/api/admin/sesiones/:id', async (req: Request, res: Response): Promise<
   }
 });
 
-// DELETE: Cancelar/eliminar sesión
+
 app.delete('/api/admin/sesiones/:id', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
@@ -894,7 +1003,7 @@ app.delete('/api/admin/sesiones/:id', async (req: Request, res: Response): Promi
 // RUTAS DE PROGRESO Y QUIZ INTENTOS
 // ==========================================
 
-// GET: Obtener lecciones completadas para una inscripción
+
 app.get('/api/progreso/:id_inscripcion', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id_inscripcion } = req.params;
@@ -909,7 +1018,7 @@ app.get('/api/progreso/:id_inscripcion', async (req: Request, res: Response): Pr
   }
 });
 
-// POST: Marcar lección como completada y recalcular porcentaje
+
 app.post('/api/progreso', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id_inscripcion_curso, id_leccion } = req.body;
@@ -918,7 +1027,7 @@ app.post('/api/progreso', async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ error: 'Se requieren id_inscripcion_curso e id_leccion' });
     }
 
-    // Insertar si no existe
+    
     const [existing]: any = await pool.execute(
       'SELECT id_progreso FROM progreso_lecciones WHERE id_inscripcion_curso = ? AND id_leccion = ?',
       [id_inscripcion_curso, id_leccion]
@@ -931,7 +1040,7 @@ app.post('/api/progreso', async (req: Request, res: Response): Promise<any> => {
       );
     }
 
-    // Obtener total de lecciones del curso
+    
     const [cursoRow]: any = await pool.execute(
       `SELECT ci.id_curso 
        FROM cursos_inscripciones ci 
@@ -981,7 +1090,7 @@ app.post('/api/progreso', async (req: Request, res: Response): Promise<any> => {
   }
 });
 
-// POST: Registrar intento de quiz
+
 app.post('/api/quiz/intentos', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id_estudiante, id_examen, id_leccion, id_inscripcion_curso, respuestas_json, puntaje } = req.body;
@@ -1010,12 +1119,12 @@ app.post('/api/quiz/intentos', async (req: Request, res: Response): Promise<any>
   }
 });
 
-// GET: Obtener intentos de quiz para revisión del profesor
+
 app.get('/api/teacher/:id/intentos-quiz', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
-    // Intentar primero con asignación formal
+    
     let query = `
       SELECT 
         qi.*,
@@ -1036,7 +1145,7 @@ app.get('/api/teacher/:id/intentos-quiz', async (req: Request, res: Response): P
 
     let [rows]: any = await pool.execute(query, [id]);
 
-    // Si el profesor no tiene alumnos asignados directamente aún, devolver todos los intentos para desarrollo/revisión general
+    
     if (rows.length === 0) {
       const fallbackQuery = `
         SELECT 
@@ -1063,7 +1172,7 @@ app.get('/api/teacher/:id/intentos-quiz', async (req: Request, res: Response): P
   }
 });
 
-// PUT: Guardar retroalimentación/feedback del profesor
+
 app.put('/api/quiz/intentos/:id/feedback', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;

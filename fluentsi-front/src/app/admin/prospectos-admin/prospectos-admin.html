@@ -1,1 +1,200 @@
-<p>prospectos-admin works!</p>
+<div class="chat-dashboard-container">
+
+    <aside class="chat-sidebar">
+        <div class="sidebar-header">
+            <h2>Prospectos</h2>
+            <div class="header-actions">
+                <button class="btn-icon" title="Nuevo Grupo de Difusión" (click)="abrirModalGrupo()">👥+</button>
+                <button class="btn-icon" title="Registrar Prospecto Manual" (click)="abrirModalProspecto()">👤+</button>
+            </div>
+        </div>
+
+        <div class="search-box">
+            <input type="text" [(ngModel)]="textoBusqueda" placeholder="🔍 Buscar chat o prospecto...">
+        </div>
+
+        <div class="chat-tabs">
+            <button class="tab" [ngClass]="{'active': tabActiva === 'todos'}"
+                (click)="cambiarTab('todos')">Todos</button>
+            <button class="tab" [ngClass]="{'active': tabActiva === 'difusiones'}"
+                (click)="cambiarTab('difusiones')">Difusiones</button>
+            <button class="tab" [ngClass]="{'active': tabActiva === 'sin_leer'}"
+                (click)="cambiarTab('sin_leer')">Pendientes</button>
+        </div>
+
+        <div class="contact-list">
+            <div *ngFor="let item of listaSidebar" class="contact-item" [ngClass]="{'active': chatActivo === item}"
+                (click)="seleccionarChat(item)">
+
+                <ng-container *ngIf="item.esGrupo">
+                    <div class="avatar group-avatar">📢</div>
+                    <div class="contact-info">
+                        <div class="contact-top">
+                            <span class="name">{{ item.nombre_grupo }}</span>
+                            <span class="time">{{ item.fecha_creacion | date:'shortTime' }}</span>
+                        </div>
+                        <div class="contact-bottom">
+                            <span class="last-msg">Grupo de Difusión</span>
+                            <span class="badge count">{{ item.total_prospectos || 0 }}</span>
+                        </div>
+                    </div>
+                </ng-container>
+
+                <ng-container *ngIf="!item.esGrupo">
+                    <div class="avatar">{{ getIniciales(item.nombre, item.ap_paterno) }}</div>
+                    <div class="contact-info">
+                        <div class="contact-top">
+                            <span class="name">{{ item.nombre }} {{ item.ap_paterno }}</span>
+                            <span class="time">{{ item.fecha_registro | date:'shortDate' }}</span>
+                        </div>
+                        <div class="contact-bottom">
+                            <span class="last-msg"
+                                [ngStyle]="{'color': item.estado === 'Pendiente' ? '#c53030' : '#718096'}">
+                                {{ item.estado }}
+                            </span>
+                        </div>
+                    </div>
+                </ng-container>
+            </div>
+
+            <div *ngIf="listaSidebar.length === 0"
+                style="padding: 20px; text-align: center; color: #a0aec0; font-size: 0.9rem;">
+                No se encontraron resultados.
+            </div>
+        </div>
+    </aside>
+
+    <main class="chat-area" *ngIf="chatActivo">
+        <header class="chat-header">
+            <div class="chat-title-info" *ngIf="chatActivo.esGrupo">
+                <div class="avatar group-avatar">📢</div>
+                <div>
+                    <h3>{{ chatActivo.nombre_grupo }}</h3>
+                    <p class="subtitle">Lista de difusión • {{ chatActivo.total_prospectos || 0 }} destinatarios</p>
+                </div>
+            </div>
+
+            <div class="chat-title-info" *ngIf="!chatActivo.esGrupo">
+                <div class="avatar">{{ getIniciales(chatActivo.nombre, chatActivo.ap_paterno) }}</div>
+                <div>
+                    <h3>{{ chatActivo.nombre }} {{ chatActivo.ap_paterno }}</h3>
+                    <p class="subtitle">{{ chatActivo.telefono || 'Sin teléfono' }} • {{ chatActivo.correo_electronico
+                        }}</p>
+                </div>
+            </div>
+
+            <div class="chat-actions" style="display: flex; gap: 10px;">
+                <button class="btn-header" *ngIf="chatActivo.esGrupo">Editar Lista</button>
+
+                
+                <button class="btn-header" *ngIf="chatActivo.esGrupo"
+                    style="color: #c53030; border-color: #feb2b2; background: #fff5f5;"
+                    (click)="eliminarGrupo(chatActivo.id_grupo_difusion)">
+                    🗑️ Eliminar
+                </button>
+
+                <button class="btn-header" *ngIf="!chatActivo.esGrupo">Ver Perfil Completo</button>
+            </div>
+        </header>
+
+        <div class="messages-container">
+            <div class="date-divider"><span>Mensajes Recientes</span></div>
+
+            <div class="message incoming" *ngIf="!chatActivo.esGrupo && chatActivo.mensaje">
+                <div class="msg-bubble">
+                    <p style="font-weight: bold; font-size: 0.8rem; color: #4a5568; margin-bottom: 5px;">Recibido desde
+                        la Web:</p>
+                    <p>{{ chatActivo.mensaje }}</p>
+                    <span class="msg-time">{{ chatActivo.fecha_registro | date:'shortTime' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <footer class="chat-input-area">
+            <button class="btn-attach" title="Adjuntar (Próximamente)">📎</button>
+            <textarea [(ngModel)]="mensajeSaliente" placeholder="Escribe un mensaje..." rows="1"
+                (keyup.enter)="enviarMensaje()"></textarea>
+            <button class="btn-send" (click)="enviarMensaje()">🚀 Enviar</button>
+        </footer>
+    </main>
+
+    <main class="chat-area empty-state" *ngIf="!chatActivo"
+        style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f7fafc; color: #a0aec0;">
+        <div style="font-size: 4rem; margin-bottom: 20px;">💬</div>
+        <h2>Selecciona un chat o grupo</h2>
+        <p>Haz clic en la lista de la izquierda para ver los detalles y enviar mensajes.</p>
+    </main>
+
+    
+    <div class="modal-overlay" *ngIf="mostrarModalGrupo">
+        <div class="modal-content" style="max-width: 500px;">
+            <h2>Crear Grupo de Difusión</h2>
+            <p style="color: #718096; margin-bottom: 20px;">Organiza a tus prospectos para mandarles mensajes masivos.
+            </p>
+
+            <div class="form-group">
+                <label>Nombre del Grupo *</label>
+                <input type="text" class="form-control" [(ngModel)]="nuevoGrupo.nombre_grupo"
+                    placeholder="Ej. Interesados Inglés Básico">
+            </div>
+            <div class="form-group" style="margin-top: 15px;">
+                <label>Descripción (Opcional)</label>
+                <textarea class="form-control" [(ngModel)]="nuevoGrupo.descripcion" rows="2"
+                    placeholder="Ej. Alumnos que pidieron info en Octubre"></textarea>
+            </div>
+
+            <div class="modal-actions" style="margin-top: 25px;">
+                <button class="btn-secondary" (click)="cerrarModalGrupo()">Cancelar</button>
+                <button class="btn-primary" (click)="guardarGrupo()">Guardar Grupo</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="modal-overlay" *ngIf="mostrarModalProspecto">
+        <div class="modal-content" style="max-width: 600px;">
+            <h2>Registrar Prospecto</h2>
+            <p style="color: #718096; margin-bottom: 20px;">Agrega a alguien que te contactó por teléfono o en persona.
+            </p>
+
+            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Nombre *</label>
+                    <input type="text" class="form-control" [(ngModel)]="nuevoProspecto.nombre"
+                        placeholder="Ej. Carlos">
+                </div>
+                <div class="form-group">
+                    <label>Apellido *</label>
+                    <input type="text" class="form-control" [(ngModel)]="nuevoProspecto.ap_paterno"
+                        placeholder="Ej. López">
+                </div>
+                <div class="form-group">
+                    <label>Teléfono (WhatsApp) *</label>
+                    <input type="text" class="form-control" [(ngModel)]="nuevoProspecto.telefono"
+                        placeholder="Ej. 4491234567">
+                </div>
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" class="form-control" [(ngModel)]="nuevoProspecto.correo_electronico"
+                        placeholder="Opcional">
+                </div>
+                <div class="form-group full-width" style="grid-column: span 2;">
+                    <label>Ciudad</label>
+                    <input type="text" class="form-control" [(ngModel)]="nuevoProspecto.ciudad"
+                        placeholder="Ej. Aguascalientes">
+                </div>
+                <div class="form-group full-width" style="grid-column: span 2;">
+                    <label>Notas / Mensaje</label>
+                    <textarea class="form-control" [(ngModel)]="nuevoProspecto.mensaje" rows="2"
+                        placeholder="¿Qué le interesa?"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="margin-top: 25px;">
+                <button class="btn-secondary" (click)="cerrarModalProspecto()">Cancelar</button>
+                <button class="btn-primary" (click)="guardarProspecto()">Registrar Prospecto</button>
+            </div>
+        </div>
+    </div>
+
+</div>
