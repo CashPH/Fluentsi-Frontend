@@ -46,8 +46,27 @@
                 <p>Cargando lección...</p>
             </div>
 
+            <!-- PANTALLA: CURSO COMPLETADO -->
+            <div *ngIf="!cargando && cursoCompletado" class="curso-completado-screen">
+                <div class="completado-icon">🎓</div>
+                <h2>¡Has completado el curso!</h2>
+                <p class="completado-titulo">{{ curso?.titulo }}</p>
+                <div class="completado-progress">
+                    <div class="completado-progress-fill"></div>
+                </div>
+                <p class="completado-subtitle">Terminaste todas las lecciones con un avance del <strong>{{ porcentajeAvance }}%</strong></p>
+                <div class="completado-actions">
+                    <button class="btn-volver-catalogo" (click)="volverAIndex()">
+                        ← Explorar más cursos
+                    </button>
+                    <button class="btn-revisar-curso" (click)="cursoCompletado = false; seleccionarPrimeraLeccion()">
+                        📖 Revisar el curso
+                    </button>
+                </div>
+            </div>
+
             <!-- CONTENIDO DE LECTURA / GENERAL -->
-            <div *ngIf="!cargando && leccionSeleccionada && leccionSeleccionada.tipo_contenido !== 'Quiz'" class="lesson-body">
+            <div *ngIf="!cargando && !cursoCompletado && leccionSeleccionada && leccionSeleccionada.tipo_contenido !== 'Quiz'" class="lesson-body">
                 <h2>{{ leccionSeleccionada.titulo }}</h2>
                 <div class="html-content" [innerHTML]="leccionSeleccionada.contenido_html || '<p>Sin contenido adicional.</p>'"></div>
 
@@ -57,11 +76,31 @@
                             [disabled]="guardandoProgreso">
                         {{ estaCompletada(leccionSeleccionada.id_leccion) ? '✓ Lección Completada' : 'Marcar como Completada' }}
                     </button>
+
+                    <!-- SIGUIENTE LECCIÓN PREVIEW -->
+                    <div *ngIf="siguienteLeccionObj" class="siguiente-leccion-preview" (click)="siguienteLeccion()">
+                        <span class="siguiente-label">Siguiente lección</span>
+                        <div class="siguiente-info">
+                            <span class="siguiente-icon">{{ siguienteLeccionObj.tipo_contenido === 'Quiz' ? '❓' : '📄' }}</span>
+                            <span class="siguiente-titulo">{{ siguienteLeccionObj.titulo }}</span>
+                            <span class="siguiente-arrow">→</span>
+                        </div>
+                    </div>
+
+                    <!-- ÚLTIMA LECCIÓN: botón para finalizar curso -->
+                    <div *ngIf="!siguienteLeccionObj && estaCompletada(leccionSeleccionada.id_leccion)" class="fin-curso-preview" (click)="volverAIndex()">
+                        <span class="siguiente-label">¿Listo para más?</span>
+                        <div class="siguiente-info">
+                            <span class="siguiente-icon">🎯</span>
+                            <span class="siguiente-titulo">Explorar más cursos</span>
+                            <span class="siguiente-arrow">→</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- CONTENIDO DE QUIZ -->
-            <div *ngIf="!cargando && leccionSeleccionada && leccionSeleccionada.tipo_contenido === 'Quiz'" class="quiz-viewer-body">
+            <div *ngIf="!cargando && !cursoCompletado && leccionSeleccionada && leccionSeleccionada.tipo_contenido === 'Quiz'" class="quiz-viewer-body">
                 <div class="quiz-header">
                     <h2>{{ leccionSeleccionada.titulo }}</h2>
                     <p class="quiz-instruction">Responde las siguientes preguntas para continuar:</p>
@@ -97,6 +136,26 @@
                         <h3>Puntaje obtenido: {{ puntajeQuiz }}%</h3>
                         <p *ngIf="puntajeQuiz >= 60">¡Felicidades! Has aprobado el examen y guardado tu intento.</p>
                         <p *ngIf="puntajeQuiz < 60">Tu intento ha sido enviado para revisión del profesor.</p>
+
+                        <!-- SIGUIENTE LECCIÓN DESPUÉS DEL QUIZ -->
+                        <div *ngIf="siguienteLeccionObj" class="siguiente-leccion-preview quiz-siguiente" (click)="siguienteLeccion()">
+                            <span class="siguiente-label">Siguiente lección</span>
+                            <div class="siguiente-info">
+                                <span class="siguiente-icon">{{ siguienteLeccionObj.tipo_contenido === 'Quiz' ? '❓' : '📄' }}</span>
+                                <span class="siguiente-titulo">{{ siguienteLeccionObj.titulo }}</span>
+                                <span class="siguiente-arrow">→</span>
+                            </div>
+                        </div>
+
+                        <!-- FIN DE CURSO DESPUÉS DEL ÚLTIMO QUIZ -->
+                        <div *ngIf="!siguienteLeccionObj" class="fin-curso-preview" (click)="volverAIndex()">
+                            <span class="siguiente-label">¡Has terminado el curso!</span>
+                            <div class="siguiente-info">
+                                <span class="siguiente-icon">🎯</span>
+                                <span class="siguiente-titulo">Explorar más cursos</span>
+                                <span class="siguiente-arrow">→</span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- BOTON ENVIAR QUIZ -->

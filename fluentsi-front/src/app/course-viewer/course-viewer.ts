@@ -36,6 +36,7 @@ export class CourseViewerComponent implements OnInit {
   quizEnviado: boolean = false;
   puntajeQuiz: number = 0;
   guardandoProgreso: boolean = false;
+  cursoCompletado: boolean = false;
 
   ngOnInit(): void {
     const user = this.authService.getUser();
@@ -180,6 +181,16 @@ export class CourseViewerComponent implements OnInit {
 
   marcarLeccionCompletada(): void {
     if (!this.idInscripcion || !this.leccionSeleccionada) return;
+    if (this.estaCompletada(this.leccionSeleccionada.id_leccion)) {
+      // Ya está completada, avanzar si hay siguiente
+      if (this.siguienteLeccionObj) {
+        this.seleccionarLeccion(this.siguienteLeccionObj);
+      } else {
+        this.cursoCompletado = true;
+        this.cdr.detectChanges();
+      }
+      return;
+    }
 
     this.guardandoProgreso = true;
     this.http.post<any>('http://localhost:4000/api/progreso', {
@@ -192,7 +203,13 @@ export class CourseViewerComponent implements OnInit {
           this.completadasSet.add(Number(this.leccionSeleccionada.id_leccion));
           this.porcentajeAvance = res.porcentaje;
           this.cdr.detectChanges();
-          this.siguienteLeccion();
+          // Si hay siguiente lección, avanzar; si no, mostrar pantalla de curso completado
+          if (this.siguienteLeccionObj) {
+            this.siguienteLeccion();
+          } else {
+            this.cursoCompletado = true;
+            this.cdr.detectChanges();
+          }
         }
       },
       error: (err) => {
@@ -228,8 +245,9 @@ export class CourseViewerComponent implements OnInit {
 
     this.puntajeQuiz = Math.round((correctas / this.preguntasQuiz.length) * 100);
     this.quizEnviado = true;
+    this.cdr.detectChanges();
 
-    // Guardar el intento de quiz
+    // Guardar el intento de quiz y luego marcar progreso siempre
     if (this.userId && this.idInscripcion) {
       this.http.post('http://localhost:4000/api/quiz/intentos', {
         id_estudiante: this.userId,
@@ -239,18 +257,74 @@ export class CourseViewerComponent implements OnInit {
         respuestas_json: respuestasFormateadas,
         puntaje: this.puntajeQuiz
       }).subscribe({
-        next: () => {
-          // Marcar lección como completada
-          this.marcarLeccionCompletada();
-        },
-        error: (err) => console.error('Error al guardar intento de quiz:', err)
+        next: () => this.guardarProgresoQuiz(),
+        // Si falla el guardado del intento, igual marcamos el progreso de la lección
+        error: (err) => {
+          console.error('Error al guardar intento de quiz:', err);
+          this.guardarProgresoQuiz();
+        }
       });
+    } else {
+      // Sin autenticación, al menos mostrar la pantalla de fin si es la última
+      if (!this.siguienteLeccionObj) {
+        this.cursoCompletado = true;
+        this.cdr.detectChanges();
+      }
     }
+  }
+
+  /**
+   * Guarda el progreso de una lección de tipo Quiz sin auto-avanzar.
+   * Muestra la pantalla de curso completado si es la última lección.
+   */
+  private guardarProgresoQuiz(): void {
+    if (!this.idInscripcion || !this.leccionSeleccionada) {
+      // Sin inscripción, al menos marcar visualmente si es la última
+      if (!this.siguienteLeccionObj) {
+        this.cursoCompletado = true;
+        this.cdr.detectChanges();
+      }
+      return;
+    }
+
+    // Si ya estaba completada, simplemente verificar si es la última
+    if (this.estaCompletada(this.leccionSeleccionada.id_leccion)) {
+      if (!this.siguienteLeccionObj) {
+        this.cursoCompletado = true;
+        this.cdr.detectChanges();
+      }
+      return;
+    }
+
+    this.http.post<any>('http://localhost:4000/api/progreso', {
+      id_inscripcion_curso: this.idInscripcion,
+      id_leccion: this.leccionSeleccionada.id_leccion
+    }).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.completadasSet.add(Number(this.leccionSeleccionada.id_leccion));
+          this.porcentajeAvance = res.porcentaje;
+        }
+        // Siempre verificar si es la última lección para mostrar pantalla de completado
+        if (!this.siguienteLeccionObj) {
+          this.cursoCompletado = true;
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error al guardar progreso del quiz:', err);
+        // Incluso si falla, mostrar pantalla de fin si es la última
+        if (!this.siguienteLeccionObj) {
+          this.cursoCompletado = true;
+          this.cdr.detectChanges();
+        }
+      }
+    });
   }
 
   siguienteLeccion(): void {
     if (!this.leccionSeleccionada) return;
-    const idx = this.lecciones.findIndex(l => l.id_leccion === this.leccionSeleccionada.id_leccion);
+    const idx = this.lecciones.findIndex(l => Number(l.id_leccion) === Number(this.leccionSeleccionada.id_leccion));
     if (idx !== -1 && idx < this.lecciones.length - 1) {
       this.seleccionarLeccion(this.lecciones[idx + 1]);
     }
@@ -258,10 +332,31 @@ export class CourseViewerComponent implements OnInit {
 
   anteriorLeccion(): void {
     if (!this.leccionSeleccionada) return;
-    const idx = this.lecciones.findIndex(l => l.id_leccion === this.leccionSeleccionada.id_leccion);
+    const idx = this.lecciones.findIndex(l => Number(l.id_leccion) === Number(this.leccionSeleccionada.id_leccion));
     if (idx > 0) {
       this.seleccionarLeccion(this.lecciones[idx - 1]);
     }
+  }
+
+  get esUltimaLeccion(): boolean {
+    if (!this.leccionSeleccionada || this.lecciones.length === 0) return false;
+    const idx = this.lecciones.findIndex(l => Number(l.id_leccion) === Number(this.leccionSeleccionada.id_leccion));
+    return idx === this.lecciones.length - 1;
+  }
+
+  get esPrimeraLeccion(): boolean {
+    if (!this.leccionSeleccionada || this.lecciones.length === 0) return false;
+    const idx = this.lecciones.findIndex(l => Number(l.id_leccion) === Number(this.leccionSeleccionada.id_leccion));
+    return idx === 0;
+  }
+
+  get siguienteLeccionObj(): any {
+    if (!this.leccionSeleccionada || this.lecciones.length === 0) return null;
+    const idx = this.lecciones.findIndex(l => Number(l.id_leccion) === Number(this.leccionSeleccionada.id_leccion));
+    if (idx !== -1 && idx < this.lecciones.length - 1) {
+      return this.lecciones[idx + 1];
+    }
+    return null;
   }
 
   volverAIndex(): void {

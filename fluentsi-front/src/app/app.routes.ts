@@ -17,7 +17,7 @@ import { CalificacionesInstructor } from './calificaciones.instructor/calificaci
 
 
 import { AdminGuard } from './services/admin.guard';
-import { LoginAdmin } from './admin/login-admin/login-admin'; 
+import { LoginAdmin } from './admin/login-admin/login-admin';
 import { Calificacionesteacher } from './calificacionesteacher/calificacionesteacher';
 
 export const routes: Routes = [
@@ -41,22 +41,22 @@ export const routes: Routes = [
   // RUTAS DEL INSTRUCTOR (GESTIÓN DE CURSOS)
   // ==========================================
   { path: 'crear-curso', component: CreateCourseComponent, canActivate: [AuthGuard] },
-  
+
   { path: 'editar-curso/:id', component: CreateCourseComponent, canActivate: [AuthGuard] },
-  
+
   // Ruta para agregar lecciones a un curso específico
   { path: 'agregar-lecciones/:id', component: AddLessonsComponent, canActivate: [AuthGuard] },
 
-// ==========================================
+  // ==========================================
   // RUTAS DEL ADMINISTRADOR
   // ==========================================
-  
+
   // El login se queda sin candado para que puedan entrar a loguearse
   { path: 'admin/login', component: LoginAdmin },
 
   // 2. LE PONEMOS EL CANDADO A TODO EL PANEL
-  { 
-    path: 'admin', 
+  {
+    path: 'admin',
     loadChildren: () => import('./admin/admin.routes').then(m => m.ADMIN_ROUTES),
     canActivate: [AdminGuard] // <--- ESTO ES LO QUE FALTABA
   }
