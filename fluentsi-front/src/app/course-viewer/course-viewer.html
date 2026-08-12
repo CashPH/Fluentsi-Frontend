@@ -1,117 +1,172 @@
-<div class="page-container">
-  <!-- NAVBAR GLOBAL CON MASCOTA -->
-  <nav class="navbar">
-    <div class="nav-left">
-      <img src="/logo.png" alt="FluentSí Logo" class="logo" />
-      <ul class="nav-links">
-        <li><a routerLink="/student-home">Inicio</a></li>
-        <li><a routerLink="/cursos-instructor" class="active">Cursos</a></li>
-        <li><a routerLink="">Calificaciones</a></li>
-        <li><a routerLink="">Pagos</a></li>
-      </ul>
-    </div>
+<div class="course-viewer-container">
 
-    <div class="nav-right">
-        <button class="logout-btn" (click)="logout()">Log out 🚪</button>
-        <img src="/monito.png" alt="Mascot" class="nav-mascot" />
-    </div>
-
-
-
-  </nav>
-
-  <!-- CUERPO CON FONDO AZUL Y MANITAS -->
-  <main class="main-body">
-    <div class="layout-container">
-
-      <!-- SIDEBAR IZQUIERDO DE CONTENIDOS -->
-      <aside class="sidebar-panel">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
         <div class="sidebar-header">
-          <h2>Course Content</h2>
+            <h2>{{ curso?.titulo || 'Contenido del Curso' }}</h2>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" [style.width.%]="porcentajeAvance"></div>
+            </div>
+            <span class="progress-text">{{ porcentajeAvance }}% completado</span>
         </div>
 
         <div class="module-section">
-          <div class="module-header">
-            <h3 class="module-title">Tag Questions</h3>
-            <span class="module-progress">0/2 <span class="chevron">^</span></span>
-          </div>
+            <div class="module-header">
+                <h3 class="module-title">Temario</h3>
+                <span class="module-progress">{{ completadasSet.size }}/{{ lecciones.length }}</span>
+            </div>
 
-          <ul class="lesson-list">
-            <li 
-              *ngFor="let item of lecciones; let i = index" 
-              [class.active]="i === indiceActivo"
-              (click)="seleccionarLeccion(i)">
-              <span class="icon">{{ item.tipo === 'leccion' ? '📄' : '❓' }}</span>
-              <span class="lesson-title">{{ item.titulo }}</span>
-              <div class="status-circle" [class.completed]="item.completada"></div>
-            </li>
-          </ul>
+            <ul class="lesson-list">
+                <li *ngFor="let item of lecciones" 
+                    [class.active]="leccionSeleccionada?.id_leccion === item.id_leccion"
+                    (click)="seleccionarLeccion(item)">
+                    <span class="icon">{{ item.tipo_contenido === 'Quiz' ? '❓' : '📄' }}</span>
+                    <span class="lesson-title">{{ item.titulo }}</span>
+                    <div class="status-circle" [class.completed]="estaCompletada(item.id_leccion)">
+                        <span *ngIf="estaCompletada(item.id_leccion)">✓</span>
+                    </div>
+                </li>
+            </ul>
         </div>
-      </aside>
+    </aside>
 
-      <!-- ÁREA PRINCIPAL DE LA LECCIÓN -->
-      <section class="content-panel">
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
         <header class="top-bar">
-          <div class="top-bar-left">
-            <h1>{{ leccionActual.titulo | uppercase }}</h1>
-          </div>
-          <button class="close-btn" (click)="cerrarVisor()">✕</button>
+            <div class="top-bar-left">
+                <button class="icon-btn" (click)="anteriorLeccion()">‹</button>
+                <h1>{{ leccionSeleccionada?.titulo || 'Cargando lección...' }}</h1>
+            </div>
+            <button class="icon-btn" (click)="volverAIndex()">✕</button>
         </header>
 
-        <!-- CUERPO DE LA LECCIÓN -->
-        <div class="lesson-body">
-          <h2>About Lesson</h2>
-          <p>
-            A <strong>tag question</strong> is a small question that we add to the end of a statement. Instead of
-            asking a full question, we use them to confirm information or to see if the other person agrees with us.
-          </p>
+        <div class="lesson-body-wrapper">
+            <!-- CARGANDO -->
+            <div *ngIf="cargando" class="loading-spinner">
+                <p>Cargando lección...</p>
+            </div>
 
-          <h3>1. The Golden Rule of Polarity</h3>
-          <p>
-            The most important rule to remember is that the tag is always the <strong>opposite</strong> of the
-            statement:
-          </p>
+            <!-- PANTALLA: CURSO COMPLETADO -->
+            <div *ngIf="!cargando && cursoCompletado" class="curso-completado-screen">
+                <div class="completado-icon">🎓</div>
+                <h2>¡Has completado el curso!</h2>
+                <p class="completado-titulo">{{ curso?.titulo }}</p>
+                <div class="completado-progress">
+                    <div class="completado-progress-fill"></div>
+                </div>
+                <p class="completado-subtitle">Terminaste todas las lecciones con un avance del <strong>{{ porcentajeAvance }}%</strong></p>
+                <div class="completado-actions">
+                    <button class="btn-volver-catalogo" (click)="volverAIndex()">
+                        ← Explorar más cursos
+                    </button>
+                    <button class="btn-revisar-curso" (click)="cursoCompletado = false; seleccionarPrimeraLeccion()">
+                        📖 Revisar el curso
+                    </button>
+                </div>
+            </div>
 
-          <ul class="content-list">
-            <li>
-              <strong>Positive Statement (+) → Negative Tag (-)</strong>
-              <p class="example">
-                <em>Example: You <strong>are</strong> a student, <strong>aren't</strong> you?</em>
-              </p>
-            </li>
-            <li>
-              <strong>Negative Statement (-) → Positive Tag (+)</strong>
-              <p class="example">
-                <em>Example: You <strong>aren't</strong> a doctor, <strong>are</strong> you?</em>
-              </p>
-            </li>
-          </ul>
+            <!-- CONTENIDO DE LECTURA / GENERAL -->
+            <div *ngIf="!cargando && !cursoCompletado && leccionSeleccionada && leccionSeleccionada.tipo_contenido !== 'Quiz'" class="lesson-body">
+                <h2>{{ leccionSeleccionada.titulo }}</h2>
+                <div class="html-content" [innerHTML]="leccionSeleccionada.contenido_html || '<p>Sin contenido adicional.</p>'"></div>
 
-          <h3>2. Finding the Right Auxiliary Verb</h3>
-          <p>
-            The tag question must use the same tense and the same auxiliary verb as the main sentence. If there is no
-            auxiliary verb (like in Present or Past Simple), we use <strong>do / does / did</strong>.
-          </p>
+                <div class="action-footer">
+                    <button class="complete-btn" 
+                            (click)="marcarLeccionCompletada()" 
+                            [disabled]="guardandoProgreso">
+                        {{ estaCompletada(leccionSeleccionada.id_leccion) ? '✓ Lección Completada' : 'Marcar como Completada' }}
+                    </button>
+
+                    <!-- SIGUIENTE LECCIÓN PREVIEW -->
+                    <div *ngIf="siguienteLeccionObj" class="siguiente-leccion-preview" (click)="siguienteLeccion()">
+                        <span class="siguiente-label">Siguiente lección</span>
+                        <div class="siguiente-info">
+                            <span class="siguiente-icon">{{ siguienteLeccionObj.tipo_contenido === 'Quiz' ? '❓' : '📄' }}</span>
+                            <span class="siguiente-titulo">{{ siguienteLeccionObj.titulo }}</span>
+                            <span class="siguiente-arrow">→</span>
+                        </div>
+                    </div>
+
+                    <!-- ÚLTIMA LECCIÓN: botón para finalizar curso -->
+                    <div *ngIf="!siguienteLeccionObj && estaCompletada(leccionSeleccionada.id_leccion)" class="fin-curso-preview" (click)="volverAIndex()">
+                        <span class="siguiente-label">¿Listo para más?</span>
+                        <div class="siguiente-info">
+                            <span class="siguiente-icon">🎯</span>
+                            <span class="siguiente-titulo">Explorar más cursos</span>
+                            <span class="siguiente-arrow">→</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENIDO DE QUIZ -->
+            <div *ngIf="!cargando && !cursoCompletado && leccionSeleccionada && leccionSeleccionada.tipo_contenido === 'Quiz'" class="quiz-viewer-body">
+                <div class="quiz-header">
+                    <h2>{{ leccionSeleccionada.titulo }}</h2>
+                    <p class="quiz-instruction">Responde las siguientes preguntas para continuar:</p>
+                </div>
+
+                <div *ngIf="preguntasQuiz.length === 0" class="no-questions">
+                    <p>Este examen aún no tiene preguntas configuradas.</p>
+                </div>
+
+                <div *ngIf="preguntasQuiz.length > 0" class="quiz-questions-list">
+                    <div class="question-card" *ngFor="let preg of preguntasQuiz; let i = index">
+                        <h3 class="question-title">{{ i + 1 }}. {{ preg.pregunta_texto }}</h3>
+
+                        <div class="options-group">
+                            <label class="option-item" 
+                                   *ngFor="let op of preg.opciones"
+                                   [class.selected]="respuestasAlumno[preg.id_pregunta] === op.id_opcion"
+                                   [class.correct-option]="quizEnviado && op.es_correcta === 1"
+                                   [class.wrong-option]="quizEnviado && respuestasAlumno[preg.id_pregunta] === op.id_opcion && op.es_correcta === 0">
+                                <input type="radio" 
+                                       [name]="'preg_' + preg.id_pregunta" 
+                                       [value]="op.id_opcion"
+                                       [checked]="respuestasAlumno[preg.id_pregunta] === op.id_opcion"
+                                       [disabled]="quizEnviado"
+                                       (change)="seleccionarOpcion(preg.id_pregunta, op.id_opcion)">
+                                <span>{{ op.opcion_texto }}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- RESULTADO DEL QUIZ -->
+                    <div *ngIf="quizEnviado" class="quiz-results-box" [class.passed]="puntajeQuiz >= 60">
+                        <h3>Puntaje obtenido: {{ puntajeQuiz }}%</h3>
+                        <p *ngIf="puntajeQuiz >= 60">¡Felicidades! Has aprobado el examen y guardado tu intento.</p>
+                        <p *ngIf="puntajeQuiz < 60">Tu intento ha sido enviado para revisión del profesor.</p>
+
+                        <!-- SIGUIENTE LECCIÓN DESPUÉS DEL QUIZ -->
+                        <div *ngIf="siguienteLeccionObj" class="siguiente-leccion-preview quiz-siguiente" (click)="siguienteLeccion()">
+                            <span class="siguiente-label">Siguiente lección</span>
+                            <div class="siguiente-info">
+                                <span class="siguiente-icon">{{ siguienteLeccionObj.tipo_contenido === 'Quiz' ? '❓' : '📄' }}</span>
+                                <span class="siguiente-titulo">{{ siguienteLeccionObj.titulo }}</span>
+                                <span class="siguiente-arrow">→</span>
+                            </div>
+                        </div>
+
+                        <!-- FIN DE CURSO DESPUÉS DEL ÚLTIMO QUIZ -->
+                        <div *ngIf="!siguienteLeccionObj" class="fin-curso-preview" (click)="volverAIndex()">
+                            <span class="siguiente-label">¡Has terminado el curso!</span>
+                            <div class="siguiente-info">
+                                <span class="siguiente-icon">🎯</span>
+                                <span class="siguiente-titulo">Explorar más cursos</span>
+                                <span class="siguiente-arrow">→</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BOTON ENVIAR QUIZ -->
+                    <div class="action-footer" *ngIf="!quizEnviado">
+                        <button class="send-quiz-btn" (click)="enviarQuiz()">
+                            Enviar Quiz
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
+    </main>
 
-        <!-- NAVEGACIÓN ANTERIOR / SIGUIENTE -->
-        <footer class="lesson-footer">
-          <button 
-            class="btn-nav" 
-            (click)="leccionAnterior()" 
-            [disabled]="indiceActivo === 0">
-            ‹ Anterior
-          </button>
-
-          <button 
-            class="btn-nav btn-next" 
-            (click)="leccionSiguiente()" 
-            [disabled]="indiceActivo === lecciones.length - 1">
-            Siguiente ›
-          </button>
-        </footer>
-      </section>
-
-    </div>
-  </main>
 </div>
