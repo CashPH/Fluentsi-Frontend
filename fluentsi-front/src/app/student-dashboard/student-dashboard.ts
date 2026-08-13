@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -8,15 +9,15 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-student-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './student-dashboard.html',
   styleUrls: ['./student-dashboard.css']
 })
 export class StudentDashboardComponent implements OnInit, OnDestroy {
-  private http = inject(HttpClient);
-  private cdr = inject(ChangeDetectorRef);
-  private authService = inject(AuthService);
-  private router = inject(Router);
+  private readonly http = inject(HttpClient);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   nombreCompleto: string = 'Estudiante';
   userId: number | null = null;
@@ -33,6 +34,14 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   cargando: boolean = true;
   inscribiendoCursoId: number | null = null;
   mensajeExito: string = '';
+
+  chatOpen: boolean = false;
+  chatMessages: Array<{ sender: 'student' | 'bot'; text: string }> = [
+    { sender: 'bot', text: 'Hola 👋, soy Handy, tu asistente de idiomas. Puedes preguntarme sobre gramática, vocabulario, tiempos verbales o traducciones.' }
+  ];
+  chatInput: string = '';
+  loadingChat: boolean = false;
+  errorChat: string = '';
 
   ngOnInit(): void {
     const user = this.authService.getUser();
@@ -172,6 +181,46 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  toggleChat(): void {
+    this.chatOpen = !this.chatOpen;
+    if (this.chatOpen) {
+      setTimeout(() => {
+        const messagesContainer = document.querySelector('.chatbot-messages');
+        messagesContainer?.scrollTo({ top: messagesContainer.scrollHeight, behavior: 'smooth' });
+      }, 10);
+    }
+  }
+
+  sendChat(): void {
+    const question = this.chatInput.trim();
+    if (!question) return;
+
+    this.chatMessages.push({ sender: 'student', text: question });
+    this.chatInput = '';
+    this.loadingChat = true;
+    this.errorChat = '';
+    this.cdr.detectChanges();
+
+    this.http.post<{ answer: string }>('http://localhost:4000/api/chat', { question }).subscribe({
+      next: (response) => {
+        this.chatMessages.push({ sender: 'bot', text: response.answer });
+        this.loadingChat = false;
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          const messagesContainer = document.querySelector('.chatbot-messages');
+          messagesContainer?.scrollTo({ top: messagesContainer.scrollHeight, behavior: 'smooth' });
+        }, 10);
+      },
+      error: (err) => {
+        console.error('Error en chatbot:', err);
+        this.errorChat = 'No pude obtener respuesta en este momento. Intenta de nuevo en unos segundos.';
+        this.chatMessages.push({ sender: 'bot', text: 'Lo siento, no puedo responder ahora. Por favor intenta de nuevo.' });
+        this.loadingChat = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   goToCursosStudent(): void {

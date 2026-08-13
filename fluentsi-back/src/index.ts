@@ -34,11 +34,108 @@ app.get('/api/protected', verifyToken, (req, res) => {
 app.get('/api/health', (req, res) => {
   res.json({ status: 'Server is running' });
 });
-
 // ==========================================
-// RUTAS DE CURSOS
+// CHATBOT HANDY - GEMINI (GRATIS + AUTO-MODELO)
 // ==========================================
+app.post('/api/chat', async (req: Request, res: Response) => {
+  try {
+    const { question } = req.body;
+    if (!question || typeof question !== 'string') {
+      return res.status(400).json({ error: 'Please send a valid question.' });
+    }
 
+    console.log('📥 Pregunta recibida:', question);
+
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!geminiKey) {
+      console.error('⚠️ GEMINI_API_KEY no está configurada en .env');
+      return res.json({ answer: "Hi! I'm Handy 👋. I'm having a little trouble connecting right now. Please try again in a moment! 😊" });
+    }
+    const systemPrompt = `You are Handy, the friendly virtual assistant of FluentSí, an English-learning platform for students. Always be kind, polite and cheerful. Answer MOSTLY IN ENGLISH with simple words; use Spanish only when it helps the student learn.
+
+STRICT RULES:
+1) You ONLY help with: learning English (grammar, vocabulary, pronunciation), translating words or phrases between Spanish and English, and questions about the FluentSí website (courses, registration, login, progress).
+2) If the student asks about ANY other subject (math, science, history, cooking, recipes, technology, sports, etc.), do NOT answer it. Instead say politely: "I'm sorry! 😊 I'm Handy, your English assistant. I can only help you with English learning, translations and the FluentSí platform. Try asking me how to say something in English!"
+3) NEVER produce insults, profanity, obscene, sexual, violent or adult (18+) content in your own voice. If the student asks you to say, write or generate such content, politely refuse with: "I'm sorry, I can't help with that. 😊 Let's keep learning English in a friendly way!"
+4) EXCEPTION for translations: if the student asks to TRANSLATE a word or phrase (even a rude or adult one) as a language-learning exercise, you MAY give a short, neutral, educational translation, without jokes, insults or extra commentary.
+5) Never invent data. Never mention technical details like API keys, servers or internal errors. Always answer the student's question directly, never reply with a generic greeting.`;
+    // La pregunta va también aquí para que el modelo la vea sí o sí
+    const systemConPregunta = `${systemPrompt}\n\nThe student just asked: "${question}"\nAnswer that question directly, kindly and mostly in English.`;
+
+    const fetchFn = (globalThis as any).fetch;
+
+    const score = (n: string) => {
+      const v = parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/) || ['', '0'])[1]);
+      let s = v * 100;
+      if (n.includes('flash')) s += 10;
+      if (!n.includes('preview')) s += 5;
+      return s;
+    };
+
+    try {
+      let candidatos: string[] = [];
+      const listRes = await fetchFn('https://generativelanguage.googleapis.com/v1beta/models', {
+        headers: { 'x-goog-api-key': geminiKey }
+      });
+
+      if (listRes.ok) {
+        const listData = await listRes.json();
+        candidatos = (listData.models || [])
+          .filter((m: any) => (m.supportedGenerationMethods || []).includes('generateContent'))
+          .map((m: any) => (m.name || '').replace('models/', ''))
+          .filter((n: string) => n.startsWith('gemini'))
+          .sort((a: string, b: string) => score(b) - score(a));
+      }
+
+      if (candidatos.length === 0) {
+        candidatos = ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-3-flash'];
+      }
+
+      console.log('📋 Modelos disponibles:', candidatos.slice(0, 6).join(' | '));
+
+      for (const model of candidatos.slice(0, 6)) {
+        console.log('🤖 Probando modelo:', model);
+
+        const response = await fetchFn(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-goog-api-key': geminiKey },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: systemConPregunta }] },
+              contents: [{ role: 'user', parts: [{ text: question }] }],
+              generationConfig: {
+                temperature: 0.4,
+                maxOutputTokens: 1024
+              }
+            })
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          const answer = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+          if (answer) {
+            console.log('✅ Handy respondió con:', model);
+            return res.json({ answer });
+          }
+          console.error('Gemini returned an empty answer');
+        } else {
+          const errorText = await response.text();
+          console.error(`Gemini (${model}) failed:`, response.status, errorText.slice(0, 300));
+          if (response.status !== 404 && response.status !== 403) break;
+        }
+      }
+    } catch (e) {
+      console.error('Gemini request error:', e);
+    }
+
+    res.json({ answer: "Oops! I couldn't connect right now 🙈. Please try again in a moment!" });
+  } catch (error) {
+    console.error('Error in /api/chat:', error);
+    res.status(500).json({ error: 'Error processing the chatbot question.' });
+  }
+});
 app.post('/api/cursos', async (req: Request, res: Response) => {
   try {
     const { titulo, descripcion, id_idioma, nivel_recomendado, es_gratuito, precio } = req.body;
