@@ -1,47 +1,53 @@
-<!-- Botón flotante: la mascota Handy -->
-<button class="chatbot-toggle" (click)="toggleChat()" title="Chat with Handy">
-  <span class="face-wrap toggle-img">
-    <img src="/monito.png" alt="Handy" />
-  </span>
-</button>
+<ng-container *ngIf="visible">
 
-<!-- Panel del chat -->
-<div class="chatbot-panel" [class.open]="isOpen">
-  <div class="chatbot-header">
-    <div class="header-info">
-      <span class="face-wrap header-avatar">
-        <img src="/monito.png" alt="Handy" />
-      </span>
-      <div>
-        <h3>Handy · FluentSí</h3>
-        <p>Your friendly English assistant</p>
-      </div>
-    </div>
-    <button class="chatbot-close" (click)="toggleChat()">✖</button>
-  </div>
+  <!-- Botón flotante: la mascota Handy -->
+  <button class="chatbot-toggle" (click)="toggleChat()" title="Chat with Handy">
+    <span class="face-wrap toggle-img">
+      <img src="/monito.png" alt="Handy" />
+    </span>
+  </button>
 
-  <div class="chatbot-wrapper">
-    <div class="chatbot-messages">
-      <div *ngFor="let m of mensajes"
-           class="chat-message"
-           [ngClass]="m.from === 'user' ? 'student' : 'bot'">
-        <span *ngIf="m.from === 'bot'" class="face-wrap msg-avatar">
+  <!-- Panel del chat -->
+  <div class="chatbot-panel" [class.open]="isOpen">
+    <div class="chatbot-header">
+      <div class="header-info">
+        <span class="face-wrap header-avatar">
           <img src="/monito.png" alt="Handy" />
         </span>
-        <p>{{ m.text }}</p>
+        <div>
+          <h3>Handy · FluentSí</h3>
+          <p>Your friendly English assistant</p>
+        </div>
       </div>
-
-      <div *ngIf="cargando" class="chat-message bot">
-        <span class="face-wrap msg-avatar">
-          <img src="/monito.png" alt="Handy" />
-        </span>
-        <p class="chat-loading">Handy is typing… ✍️</p>
-      </div>
+      <button class="chatbot-close" (click)="toggleChat()">✖</button>
     </div>
 
-    <div class="chatbot-input-area">
-      <input [(ngModel)]="mensaje" (keyup.enter)="enviar()" placeholder="Type your question…" />
-      <button (click)="enviar()" [disabled]="cargando">➤</button>
+    <div class="chatbot-wrapper">
+      <div class="chatbot-messages">
+        <div *ngFor="let m of mensajes"
+             class="chat-message"
+             [ngClass]="m.from === 'user' ? 'student' : 'bot'">
+          <span *ngIf="m.from === 'bot'" class="face-wrap msg-avatar">
+            <img src="/monito.png" alt="Handy" />
+          </span>
+          <p>{{ m.text }}</p>
+        </div>
+
+        <div *ngIf="cargando" class="chat-message bot">
+          <span class="face-wrap msg-avatar">
+            <img src="/monito.png" alt="Handy" />
+          </span>
+          <p class="chat-loading">Handy is typing… ✍️</p>
+        </div>
+      </div>
+
+      <div class="chatbot-input-area">
+        <input [(ngModel)]="mensaje"
+               (keyup.enter)="enviar()"
+               placeholder="Type your question…" />
+        <button (click)="enviar()" [disabled]="cargando">➤</button>
+      </div>
     </div>
   </div>
-</div>
+
+</ng-container>

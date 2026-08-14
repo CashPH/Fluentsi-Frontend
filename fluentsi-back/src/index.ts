@@ -80,11 +80,12 @@ STRICT RULES:
 
       if (listRes.ok) {
         const listData = await listRes.json();
-        candidatos = (listData.models || [])
+                candidatos = (listData.models || [])
           .filter((m: any) => (m.supportedGenerationMethods || []).includes('generateContent'))
           .map((m: any) => (m.name || '').replace('models/', ''))
           .filter((n: string) => n.startsWith('gemini'))
-          .sort((a: string, b: string) => score(b) - score(a));
+          .filter((n: string) => !/(video|image|img|audio|tts|embedding|eap|computer|robotics|research)/.test(n))
+          .sort((a: string, b: string) => score(b) - score(a));x
       }
 
       if (candidatos.length === 0) {
