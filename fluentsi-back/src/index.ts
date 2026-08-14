@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import bcrypt from 'bcryptjs'; 
+import bcrypt from 'bcryptjs';
 
 import authRouter from './routes/auth';
 import { verifyToken } from './middleware/auth';
@@ -136,14 +136,33 @@ STRICT RULES:
     res.status(500).json({ error: 'Error processing the chatbot question.' });
   }
 });
+// Asegurar que la columna id_instructor exista en la tabla cursos y asignar autor por defecto si era nulo
+(async () => {
+  try {
+    await pool.execute('ALTER TABLE cursos ADD COLUMN id_instructor INT NULL');
+  } catch (e) {
+    // Ignorar si la columna ya existe
+  }
+
+  try {
+    await pool.execute(`
+      UPDATE cursos 
+      SET id_instructor = (SELECT id_instructor FROM instructores ORDER BY id_instructor ASC LIMIT 1) 
+      WHERE id_instructor IS NULL AND EXISTS (SELECT 1 FROM instructores)
+    `);
+  } catch (e) {
+    // Ignorar si no se puede actualizar
+  }
+})();
+
 app.post('/api/cursos', async (req: Request, res: Response) => {
   try {
-    const { titulo, descripcion, id_idioma, nivel_recomendado, es_gratuito, precio } = req.body;
+    const { titulo, descripcion, id_idioma, nivel_recomendado, es_gratuito, precio, id_instructor } = req.body;
 
     const query = `
       INSERT INTO cursos 
-      (titulo, descripcion, id_idioma, nivel_recomendado, es_gratuito, precio) 
-      VALUES (?, ?, ?, ?, ?, ?)
+      (titulo, descripcion, id_idioma, nivel_recomendado, es_gratuito, precio, id_instructor) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
 
     const [result] = await pool.execute(query, [
@@ -152,7 +171,8 @@ app.post('/api/cursos', async (req: Request, res: Response) => {
       id_idioma,
       nivel_recomendado,
       es_gratuito,
-      precio || 0
+      precio || 0,
+      id_instructor || null
     ]);
 
     res.status(201).json({
@@ -168,7 +188,13 @@ app.post('/api/cursos', async (req: Request, res: Response) => {
 
 app.get('/api/cursos', async (req: Request, res: Response) => {
   try {
-    const [rows] = await pool.execute('SELECT * FROM cursos');
+    const [rows] = await pool.execute(`
+      SELECT c.*, 
+             COALESCE(NULLIF(TRIM(CONCAT(i.nombre, ' ', COALESCE(i.ap_paterno, ''))), ''), 'Profesor Fluentsi') AS autor
+      FROM cursos c
+      LEFT JOIN instructores i ON c.id_instructor = i.id_instructor
+      ORDER BY c.id_curso DESC
+    `);
     res.json(rows);
   } catch (error) {
     console.error(error);
@@ -180,7 +206,13 @@ app.get('/api/cursos/:id', async (req: Request, res: Response): Promise<any> => 
   try {
     const { id } = req.params;
 
-    const [rows]: any = await pool.execute('SELECT * FROM cursos WHERE id_curso = ?', [id]);
+    const [rows]: any = await pool.execute(`
+      SELECT c.*, 
+             COALESCE(NULLIF(TRIM(CONCAT(i.nombre, ' ', COALESCE(i.ap_paterno, ''))), ''), 'Profesor Fluentsi') AS autor
+      FROM cursos c
+      LEFT JOIN instructores i ON c.id_instructor = i.id_instructor
+      WHERE c.id_curso = ?
+    `, [id]);
 
     if (rows.length === 0) {
       return res.status(404).json({ message: 'Curso no encontrado' });
@@ -196,17 +228,19 @@ app.get('/api/cursos/:id', async (req: Request, res: Response): Promise<any> => 
 app.put('/api/cursos/:id', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    const { titulo, descripcion, id_idioma, nivel_recomendado, es_gratuito, precio } = req.body;
+    const { titulo, descripcion, id_idioma, nivel_recomendado, es_gratuito, precio, id_instructor } = req.body;
 
     const query = `
       UPDATE cursos 
-      SET titulo = ?, descripcion = ?, id_idioma = ?, nivel_recomendado = ?, es_gratuito = ?, precio = ?
+      SET titulo = ?, descripcion = ?, id_idioma = ?, nivel_recomendado = ?, es_gratuito = ?, precio = ?${id_instructor ? ', id_instructor = ?' : ''}
       WHERE id_curso = ?
     `;
 
-    const [result]: any = await pool.execute(query, [
-      titulo, descripcion, id_idioma, nivel_recomendado, es_gratuito, precio || 0, id
-    ]);
+    const queryParams = id_instructor
+      ? [titulo, descripcion, id_idioma, nivel_recomendado, es_gratuito, precio || 0, id_instructor, id]
+      : [titulo, descripcion, id_idioma, nivel_recomendado, es_gratuito, precio || 0, id];
+
+    const [result]: any = await pool.execute(query, queryParams);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'No se encontró el curso para actualizar' });
@@ -218,6 +252,76 @@ app.put('/api/cursos/:id', async (req: Request, res: Response): Promise<any> => 
     res.status(500).json({ error: 'Error al actualizar el curso' });
   }
 });
+
+app.delete('/api/cursos/:id', async (req: Request, res: Response): Promise<any> => {
+  let connection: any;
+  try {
+    connection = await pool.getConnection();
+    const { id } = req.params;
+
+    // Desactivar verificación de claves foráneas en esta conexión específica
+    await connection.query('SET FOREIGN_KEY_CHECKS = 0');
+
+    try {
+      // 1. Obtener lecciones del curso
+      const [lecciones]: any = await connection.query('SELECT id_leccion, tipo_contenido, contenido_html FROM lecciones WHERE id_curso = ?', [id]);
+
+      // 2. Procesar cada lección
+      for (const l of lecciones) {
+        // Eliminar intentos de quiz de esta lección
+        try { await connection.query('DELETE FROM quiz_intentos WHERE id_leccion = ?', [l.id_leccion]); } catch (e) {}
+        // Eliminar reaperturas de examen
+        try { await connection.query('DELETE FROM examen_reaperturas WHERE id_leccion = ?', [l.id_leccion]); } catch (e) {}
+        // Eliminar progreso
+        try { await connection.query('DELETE FROM progreso_lecciones WHERE id_leccion = ?', [l.id_leccion]); } catch (e) {}
+
+        // Si es Quiz, el contenido_html es el id_examen
+        if (l.tipo_contenido === 'Quiz' && l.contenido_html) {
+          const idExamen = parseInt(l.contenido_html);
+          if (!isNaN(idExamen)) {
+            try {
+              const [preguntas]: any = await connection.query('SELECT id_pregunta FROM preguntas WHERE id_examen = ?', [idExamen]);
+              for (const p of preguntas) {
+                try { await connection.query('DELETE FROM opciones_respuesta WHERE id_pregunta = ?', [p.id_pregunta]); } catch (e) {}
+              }
+              try { await connection.query('DELETE FROM preguntas WHERE id_examen = ?', [idExamen]); } catch (e) {}
+              try { await connection.query('DELETE FROM examenes WHERE id_examen = ?', [idExamen]); } catch (e) {}
+            } catch (e) { console.error('Error al eliminar examen de lección:', e); }
+          }
+        }
+      }
+
+      // 3. Eliminar inscripciones y progreso a nivel inscripción
+      try {
+        const [inscripciones]: any = await connection.query('SELECT id_inscripcion_curso FROM cursos_inscripciones WHERE id_curso = ?', [id]);
+        for (const ins of inscripciones) {
+          try { await connection.query('DELETE FROM progreso_lecciones WHERE id_inscripcion_curso = ?', [ins.id_inscripcion_curso]); } catch (e) {}
+        }
+        await connection.query('DELETE FROM cursos_inscripciones WHERE id_curso = ?', [id]);
+      } catch (e) {}
+
+      // 4. Eliminar lecciones del curso
+      await connection.query('DELETE FROM lecciones WHERE id_curso = ?', [id]);
+
+      // 5. Eliminar el curso
+      const [result]: any = await connection.query('DELETE FROM cursos WHERE id_curso = ?', [id]);
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: 'Curso no encontrado para eliminar' });
+      }
+
+      res.json({ success: true, mensaje: 'Curso eliminado exitosamente' });
+    } finally {
+      await connection.query('SET FOREIGN_KEY_CHECKS = 1');
+    }
+  } catch (error) {
+    console.error('Error al eliminar el curso:', error);
+    res.status(500).json({ error: 'Error al eliminar el curso', detalle: String(error) });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
 
 // ==========================================
 // RUTAS DE LECCIONES Y EXÁMENES
@@ -466,8 +570,8 @@ app.post('/api/admin/grupos-difusion', async (req: Request, res: Response): Prom
 app.post('/api/admin/prospectos-grupos', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id_prospecto, id_grupo_difusion } = req.body;
-    
-    
+
+
     const [existing]: any = await pool.execute(
       'SELECT * FROM prospectos_grupos WHERE id_prospecto = ? AND id_grupo_difusion = ?',
       [id_prospecto, id_grupo_difusion]
@@ -492,12 +596,12 @@ app.post('/api/admin/prospectos-grupos', async (req: Request, res: Response): Pr
 app.post('/api/web/prospectos', async (req: Request, res: Response): Promise<any> => {
   try {
     const { nombre, ap_paterno, correo_electronico, telefono, ciudad, mensaje } = req.body;
-    
+
     const [result]: any = await pool.execute(
       'INSERT INTO prospectos (nombre, ap_paterno, correo_electronico, telefono, ciudad, mensaje, estado) VALUES (?, ?, ?, ?, ?, ?, "Pendiente")',
       [nombre, ap_paterno, correo_electronico, telefono, ciudad, mensaje]
     );
-    
+
     const id_prospecto = result.insertId;
 
     await pool.execute(
@@ -516,8 +620,8 @@ app.post('/api/web/prospectos', async (req: Request, res: Response): Promise<any
 app.delete('/api/admin/grupos-difusion/:id', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    
-    
+
+
     if (id === '1') {
       return res.status(400).json({ error: 'No puedes borrar el grupo default (Nuevos)' });
     }
@@ -631,7 +735,7 @@ app.delete('/api/admin/instructores/:id', async (req: Request, res: Response): P
 
 app.get('/api/admin/administradores', async (req: Request, res: Response): Promise<any> => {
   try {
-    
+
     const [rows] = await pool.execute(
       'SELECT id_admin, nombre, ap_paterno, ap_materno, usuario AS correo, correo_recuperacion, privilegios, 1 AS activo FROM administradores ORDER BY id_admin DESC'
     );
@@ -645,22 +749,22 @@ app.get('/api/admin/administradores', async (req: Request, res: Response): Promi
 app.post('/api/admin/administradores', async (req: Request, res: Response): Promise<any> => {
   try {
     const { nombre, ap_paterno, ap_materno, correo, correo_recuperacion, password, privilegios } = req.body;
-    
-    
+
+
     const salt = await bcrypt.genSalt(10);
     const hashed = await bcrypt.hash(password || '123456', salt);
 
-    
+
     const privilegiosJSON = typeof privilegios === 'object' ? JSON.stringify(privilegios) : privilegios;
 
     const query = `INSERT INTO administradores (nombre, ap_paterno, ap_materno, usuario, correo_recuperacion, password, privilegios) VALUES (?, ?, ?, ?, ?, ?, ?)`;
     const [result] = await pool.execute(query, [
-      nombre, 
-      ap_paterno, 
-      ap_materno || null, 
-      correo, 
-      correo_recuperacion || null, 
-      hashed, 
+      nombre,
+      ap_paterno,
+      ap_materno || null,
+      correo,
+      correo_recuperacion || null,
+      hashed,
       privilegiosJSON
     ]);
 
@@ -675,27 +779,27 @@ app.put('/api/admin/administradores/:id', async (req: Request, res: Response): P
   try {
     const { id } = req.params;
     const { nombre, ap_paterno, ap_materno, correo, correo_recuperacion, privilegios, password } = req.body;
-    
-    
+
+
     const privilegiosJSON = typeof privilegios === 'object' ? JSON.stringify(privilegios) : privilegios;
 
-    
+
     if (password && password.trim() !== '') {
       const salt = await bcrypt.genSalt(10);
       const hashed = await bcrypt.hash(password, salt);
 
       await pool.execute(
-        'UPDATE administradores SET nombre = ?, ap_paterno = ?, ap_materno = ?, usuario = ?, correo_recuperacion = ?, privilegios = ?, password = ? WHERE id_admin = ?', 
+        'UPDATE administradores SET nombre = ?, ap_paterno = ?, ap_materno = ?, usuario = ?, correo_recuperacion = ?, privilegios = ?, password = ? WHERE id_admin = ?',
         [nombre, ap_paterno, ap_materno || null, correo, correo_recuperacion || null, privilegiosJSON, hashed, id]
       );
     } else {
-      
+
       await pool.execute(
-        'UPDATE administradores SET nombre = ?, ap_paterno = ?, ap_materno = ?, usuario = ?, correo_recuperacion = ?, privilegios = ? WHERE id_admin = ?', 
+        'UPDATE administradores SET nombre = ?, ap_paterno = ?, ap_materno = ?, usuario = ?, correo_recuperacion = ?, privilegios = ? WHERE id_admin = ?',
         [nombre, ap_paterno, ap_materno || null, correo, correo_recuperacion || null, privilegiosJSON, id]
       );
     }
-    
+
     res.json({ success: true, mensaje: 'Admin actualizado correctamente' });
   } catch (error) {
     console.error('ERROR SQL AL EDITAR:', error);
@@ -756,7 +860,7 @@ app.post('/api/inscripciones', async (req: Request, res: Response): Promise<any>
       return res.status(400).json({ error: 'Se requiere id_estudiante e id_curso' });
     }
 
-    
+
     const [existing]: any = await pool.execute(
       'SELECT id_inscripcion_curso FROM cursos_inscripciones WHERE id_estudiante = ? AND id_curso = ?',
       [id_estudiante, id_curso]
@@ -795,7 +899,7 @@ app.get('/api/teacher/:id/stats', async (req: Request, res: Response): Promise<a
       [id]
     );
 
-    
+
     const [sesiones]: any = await pool.execute(
       `SELECT COUNT(*) AS total FROM sesiones_clases 
        WHERE id_instructor = ? 
@@ -862,7 +966,7 @@ app.get('/api/teacher/:id/sesiones', async (req: Request, res: Response): Promis
       whereExtra = 'AND s.fecha BETWEEN ? AND ?';
       params.push(fecha_inicio, fecha_fin);
     } else {
-      
+
       whereExtra = `AND s.fecha BETWEEN 
         DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY) 
         AND DATE_ADD(DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), INTERVAL 6 DAY)`;
@@ -950,7 +1054,7 @@ app.post('/api/admin/asignaciones', async (req: Request, res: Response): Promise
       return res.status(400).json({ error: 'Se requieren id_instructor e id_estudiante' });
     }
 
-    
+
     const [existing]: any = await pool.execute(
       'SELECT id_asignacion FROM asignaciones_instructor WHERE id_instructor = ? AND id_estudiante = ? AND activo = 1',
       [id_instructor, id_estudiante]
@@ -1124,7 +1228,7 @@ app.post('/api/progreso', async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ error: 'Se requieren id_inscripcion_curso e id_leccion' });
     }
 
-    
+
     const [existing]: any = await pool.execute(
       'SELECT id_progreso FROM progreso_lecciones WHERE id_inscripcion_curso = ? AND id_leccion = ?',
       [id_inscripcion_curso, id_leccion]
@@ -1137,7 +1241,7 @@ app.post('/api/progreso', async (req: Request, res: Response): Promise<any> => {
       );
     }
 
-    
+
     const [cursoRow]: any = await pool.execute(
       `SELECT ci.id_curso 
        FROM cursos_inscripciones ci 
@@ -1205,6 +1309,16 @@ app.post('/api/quiz/intentos', async (req: Request, res: Response): Promise<any>
       [id_estudiante, id_examen, id_leccion, id_inscripcion_curso, respStr || '[]', puntaje || 0]
     );
 
+    // Desactivar cualquier reapertura pendiente al consumir el intento
+    try {
+      await pool.execute(
+        'UPDATE examen_reaperturas SET activo = 0 WHERE id_estudiante = ? AND id_leccion = ?',
+        [id_estudiante, id_leccion]
+      );
+    } catch (e) {
+      // Ignorar si la tabla no existe aún
+    }
+
     res.status(201).json({
       success: true,
       mensaje: 'Intento de quiz guardado exitosamente',
@@ -1220,42 +1334,57 @@ app.post('/api/quiz/intentos', async (req: Request, res: Response): Promise<any>
 app.get('/api/teacher/:id/intentos-quiz', async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
+    const teacherId = Number(id) || 0;
 
-    
-    let query = `
-      SELECT 
-        qi.*,
-        CONCAT(e.nombre, ' ', e.ap_paterno) AS nombre_alumno,
+    // Obtener todos los intentos de los cursos del profesor (por id_instructor en cursos)
+    // O todos si no hay cursos asignados (fallback total)
+    const mainQuery = `
+      SELECT DISTINCT
+        qi.id_intento,
+        qi.id_estudiante,
+        qi.id_examen,
+        qi.id_leccion,
+        qi.respuestas_json,
+        qi.puntaje,
+        qi.feedback_texto,
+        qi.fecha_intento,
+        CONCAT(e.nombre, ' ', COALESCE(e.ap_paterno, '')) AS nombre_alumno,
         e.nivel_actual,
         c.titulo AS titulo_curso,
+        c.id_curso,
         l.titulo AS titulo_leccion,
-        ex.titulo AS titulo_examen
+        l.tipo_contenido
       FROM quiz_intentos qi
       JOIN estudiantes e ON qi.id_estudiante = e.id_estudiante
       JOIN lecciones l ON qi.id_leccion = l.id_leccion
-      JOIN examenes ex ON qi.id_examen = ex.id_examen
       JOIN cursos c ON l.id_curso = c.id_curso
-      JOIN asignaciones_instructor ai ON ai.id_estudiante = e.id_estudiante
-      WHERE ai.id_instructor = ? AND ai.activo = 1
+      WHERE c.id_instructor = ?
       ORDER BY qi.fecha_intento DESC
     `;
 
-    let [rows]: any = await pool.execute(query, [id]);
+    let [rows]: any = await pool.execute(mainQuery, [teacherId]);
 
-    
+    // Si no hay resultados por id_instructor, traer todos los intentos existentes
     if (rows.length === 0) {
       const fallbackQuery = `
-        SELECT 
-          qi.*,
-          CONCAT(e.nombre, ' ', e.ap_paterno) AS nombre_alumno,
+        SELECT DISTINCT
+          qi.id_intento,
+          qi.id_estudiante,
+          qi.id_examen,
+          qi.id_leccion,
+          qi.respuestas_json,
+          qi.puntaje,
+          qi.feedback_texto,
+          qi.fecha_intento,
+          CONCAT(e.nombre, ' ', COALESCE(e.ap_paterno, '')) AS nombre_alumno,
           e.nivel_actual,
           c.titulo AS titulo_curso,
+          c.id_curso,
           l.titulo AS titulo_leccion,
-          ex.titulo AS titulo_examen
+          l.tipo_contenido
         FROM quiz_intentos qi
         JOIN estudiantes e ON qi.id_estudiante = e.id_estudiante
         JOIN lecciones l ON qi.id_leccion = l.id_leccion
-        JOIN examenes ex ON qi.id_examen = ex.id_examen
         JOIN cursos c ON l.id_curso = c.id_curso
         ORDER BY qi.fecha_intento DESC
       `;
@@ -1284,6 +1413,223 @@ app.put('/api/quiz/intentos/:id/feedback', async (req: Request, res: Response): 
   } catch (error) {
     console.error('ERROR AL GUARDAR FEEDBACK:', error);
     res.status(500).json({ error: 'Error al guardar retroalimentación' });
+  }
+});
+
+// ==========================================
+// BLOQUEO DE LECCIONES Y REAPERTURA DE EXÁMENES
+// ==========================================
+
+// PUT: Cambiar estado de bloqueo de una lección (profesor)
+app.put('/api/lecciones/:id/bloqueo', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const { bloqueada } = req.body;
+
+    try {
+      await pool.execute('ALTER TABLE lecciones ADD COLUMN bloqueada TINYINT(1) DEFAULT 0');
+    } catch (e) {
+      // Ignorar si la columna ya existe
+    }
+
+    await pool.execute('UPDATE lecciones SET bloqueada = ? WHERE id_leccion = ?', [bloqueada ? 1 : 0, id]);
+
+    res.json({ success: true, bloqueada: bloqueada ? 1 : 0 });
+  } catch (error) {
+    console.error('ERROR AL CAMBIAR BLOQUEO DE LECCIÓN:', error);
+    res.status(500).json({ error: 'Error al cambiar bloqueo de lección' });
+  }
+});
+
+// GET: Obtener estado de intentos y reaperturas para un estudiante en una lección
+app.get('/api/quiz/intentos/estado', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id_estudiante, id_leccion } = req.query;
+
+    if (!id_estudiante || !id_leccion) {
+      return res.status(400).json({ error: 'Se requieren id_estudiante e id_leccion' });
+    }
+
+    try {
+      await pool.execute(`
+        CREATE TABLE IF NOT EXISTS examen_reaperturas (
+          id_reapertura INT AUTO_INCREMENT PRIMARY KEY,
+          id_estudiante INT NOT NULL,
+          id_leccion INT NOT NULL,
+          fecha_reapertura DATETIME DEFAULT CURRENT_TIMESTAMP,
+          activo TINYINT(1) DEFAULT 1
+        )
+      `);
+    } catch (e) {
+      // Ignorar si la tabla ya existe
+    }
+
+    const [intentosRows]: any = await pool.execute(
+      'SELECT COUNT(*) as total, MAX(puntaje) as max_puntaje FROM quiz_intentos WHERE id_estudiante = ? AND id_leccion = ?',
+      [id_estudiante as string, id_leccion as string]
+    );
+
+    const [reaperturaRows]: any = await pool.execute(
+      'SELECT * FROM examen_reaperturas WHERE id_estudiante = ? AND id_leccion = ? AND activo = 1',
+      [id_estudiante as string, id_leccion as string]
+    );
+
+    const [feedbackRows]: any = await pool.execute(
+      'SELECT feedback_texto FROM quiz_intentos WHERE id_estudiante = ? AND id_leccion = ? AND feedback_texto IS NOT NULL AND feedback_texto != "" ORDER BY fecha_intento DESC LIMIT 1',
+      [id_estudiante as string, id_leccion as string]
+    );
+
+    res.json({
+      success: true,
+      totalIntentos: intentosRows[0]?.total || 0,
+      maxPuntaje: intentosRows[0]?.max_puntaje || 0,
+      tieneReapertura: reaperturaRows.length > 0,
+      feedbackTexto: feedbackRows[0]?.feedback_texto || ''
+    });
+  } catch (error) {
+    console.error('ERROR AL OBTENER ESTADO DE INTENTOS:', error);
+    res.status(500).json({ error: 'Error al obtener estado de intentos' });
+  }
+});
+
+// POST: Reabrir examen para un estudiante (profesor)
+app.post('/api/examenes/reabrir', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id_estudiante, id_leccion } = req.body;
+
+    if (!id_estudiante || !id_leccion) {
+      return res.status(400).json({ error: 'Se requieren id_estudiante e id_leccion' });
+    }
+
+    try {
+      await pool.execute(`
+        CREATE TABLE IF NOT EXISTS examen_reaperturas (
+          id_reapertura INT AUTO_INCREMENT PRIMARY KEY,
+          id_estudiante INT NOT NULL,
+          id_leccion INT NOT NULL,
+          fecha_reapertura DATETIME DEFAULT CURRENT_TIMESTAMP,
+          activo TINYINT(1) DEFAULT 1
+        )
+      `);
+    } catch (e) {
+      // Ignorar si la tabla ya existe
+    }
+
+    await pool.execute(
+      'INSERT INTO examen_reaperturas (id_estudiante, id_leccion, activo) VALUES (?, ?, 1)',
+      [id_estudiante, id_leccion]
+    );
+
+    res.json({ success: true, mensaje: 'Examen reabierto para el alumno con éxito' });
+  } catch (error) {
+    console.error('ERROR AL REABRIR EXAMEN:', error);
+    res.status(500).json({ error: 'Error al reabrir el examen' });
+  }
+});
+
+// ==========================================
+// RUTAS DE CALIFICACIONES DE DESEMPEÑO
+// ==========================================
+
+// Crear tabla de calificaciones si no existe
+(async () => {
+  try {
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS calificaciones_desempenio (
+        id_calificacion INT AUTO_INCREMENT PRIMARY KEY,
+        id_instructor INT NOT NULL,
+        id_estudiante INT NOT NULL,
+        evaluacion_cursos VARCHAR(50) DEFAULT NULL,
+        evaluacion_examenes VARCHAR(50) DEFAULT NULL,
+        evaluacion_general VARCHAR(50) DEFAULT NULL,
+        comentarios LONGTEXT,
+        fecha_calificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_estudiante (id_estudiante),
+        INDEX idx_instructor (id_instructor),
+        UNIQUE KEY unique_calificacion (id_instructor, id_estudiante)
+      )
+    `);
+  } catch (e) {
+    // Ignorar si la tabla ya existe
+  }
+})();
+
+// POST: Guardar o actualizar calificación de desempeño
+app.post('/api/calificaciones-desempenio', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id_instructor, id_estudiante, evaluacion_cursos, evaluacion_examenes, evaluacion_general, comentarios } = req.body;
+
+    if (!id_instructor || !id_estudiante) {
+      return res.status(400).json({ error: 'Se requieren id_instructor e id_estudiante' });
+    }
+
+    // Intenta actualizar primero
+    const [updateResult]: any = await pool.execute(
+      `UPDATE calificaciones_desempenio 
+       SET evaluacion_cursos = ?, evaluacion_examenes = ?, evaluacion_general = ?, comentarios = ?
+       WHERE id_instructor = ? AND id_estudiante = ?`,
+      [evaluacion_cursos || null, evaluacion_examenes || null, evaluacion_general || null, comentarios || '', id_instructor, id_estudiante]
+    );
+
+    // Si no actualizó nada, inserta un nuevo registro
+    if (updateResult.affectedRows === 0) {
+      await pool.execute(
+        `INSERT INTO calificaciones_desempenio (id_instructor, id_estudiante, evaluacion_cursos, evaluacion_examenes, evaluacion_general, comentarios)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [id_instructor, id_estudiante, evaluacion_cursos || null, evaluacion_examenes || null, evaluacion_general || null, comentarios || '']
+      );
+    }
+
+    res.status(201).json({ success: true, mensaje: 'Calificación guardada exitosamente' });
+  } catch (error) {
+    console.error('ERROR AL GUARDAR CALIFICACIÓN:', error);
+    res.status(500).json({ error: 'Error al guardar la calificación de desempeño' });
+  }
+});
+
+// GET: Obtener calificación de un estudiante por su instructor
+app.get('/api/calificaciones-desempenio/instructor/:id_instructor/estudiante/:id_estudiante', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id_instructor, id_estudiante } = req.params;
+
+    const [rows]: any = await pool.execute(
+      `SELECT * FROM calificaciones_desempenio 
+       WHERE id_instructor = ? AND id_estudiante = ?`,
+      [id_instructor, id_estudiante]
+    );
+
+    if (rows.length === 0) {
+      return res.json({ success: true, data: null });
+    }
+
+    res.json({ success: true, data: rows[0] });
+  } catch (error) {
+    console.error('ERROR AL OBTENER CALIFICACIÓN:', error);
+    res.status(500).json({ error: 'Error al obtener la calificación' });
+  }
+});
+
+// GET: Obtener todas las calificaciones de un estudiante
+app.get('/api/calificaciones-desempenio/estudiante/:id_estudiante', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id_estudiante } = req.params;
+
+    const [rows]: any = await pool.execute(
+      `SELECT 
+         cd.*,
+         CONCAT(i.nombre, ' ', COALESCE(i.ap_paterno, '')) AS nombre_instructor
+       FROM calificaciones_desempenio cd
+       LEFT JOIN instructores i ON cd.id_instructor = i.id_instructor
+       WHERE cd.id_estudiante = ?
+       ORDER BY cd.fecha_calificacion DESC`,
+      [id_estudiante]
+    );
+
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('ERROR AL OBTENER CALIFICACIONES DEL ESTUDIANTE:', error);
+    res.status(500).json({ error: 'Error al obtener las calificaciones' });
   }
 });
 

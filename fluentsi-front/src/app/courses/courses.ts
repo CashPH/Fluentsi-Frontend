@@ -162,4 +162,21 @@ export class CoursesComponent implements OnInit {
       }
     });
   }
+
+  eliminarCurso(idCurso: number, event: Event): void {
+    event.stopPropagation();
+    if (confirm('¿Estás seguro de que deseas eliminar este curso? Esta acción no se puede deshacer.')) {
+      this.http.delete(`http://localhost:4000/api/cursos/${idCurso}`).subscribe({
+        next: () => {
+          alert('Curso eliminado exitosamente.');
+          this.cargarCursos();
+        },
+        error: (err) => {
+          console.error('Error al eliminar el curso:', err);
+          const detalle = err.error?.detalle || err.error?.error || err.error?.message || err.message || '';
+          alert(`No se pudo eliminar el curso. ${detalle}`);
+        }
+      });
+    }
+  }
 }

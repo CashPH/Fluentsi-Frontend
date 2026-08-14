@@ -58,6 +58,7 @@
                     <div class="card-body">
                         <span class="level-badge">{{ displayNivel(curso) }}</span>
                         <h4>{{ curso.titulo }}</h4>
+                        <p class="course-author" style="font-size: 0.85rem; color: #64748b; margin: 0.3rem 0 0.5rem 0;">👨‍🏫 {{ curso.autor || 'Profesor' }}</p>
                         <div class="course-stats">
                             <span>📄 Lecciones</span>
                             <span>🕒 {{ curso.es_gratuito ? 'Gratis' : '$' + curso.precio }}</span>

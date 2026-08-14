@@ -64,8 +64,10 @@
                         <input type="number" formControlName="precio">
                     </div>
                 </div>
-
-                <button type="submit" class="submit-btn" [disabled]="courseForm.invalid">Guardar Curso</button>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button type="submit" class="submit-btn" [disabled]="courseForm.invalid" style="flex: 1;">Guardar Curso</button>
+                    <button type="button" *ngIf="isEditMode" (click)="eliminarCurso()" class="submit-btn" style="background-color: #ef4444; color: #fff; flex: 1;">Borrar Curso 🗑️</button>
+                </div>
             </form>
         </div>
     </main>

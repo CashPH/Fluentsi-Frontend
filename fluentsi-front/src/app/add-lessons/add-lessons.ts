@@ -2,7 +2,7 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { QuillModule } from 'ngx-quill';
 
 @Component({
@@ -14,6 +14,7 @@ import { QuillModule } from 'ngx-quill';
 })
 export class AddLessonsComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private http = inject(HttpClient);
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
@@ -156,6 +157,22 @@ export class AddLessonsComponent implements OnInit {
     });
   }
 
+  toggleBloqueoLeccion(leccion: any): void {
+    const nuevoEstado = leccion.bloqueada === 1 ? 0 : 1;
+    this.http.put(`http://localhost:4000/api/lecciones/${leccion.id_leccion}/bloqueo`, {
+      bloqueada: nuevoEstado
+    }).subscribe({
+      next: () => {
+        leccion.bloqueada = nuevoEstado;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error al cambiar bloqueo:', err);
+        alert('Error al cambiar el estado de bloqueo de la lección.');
+      }
+    });
+  }
+
   onSubmit() {
     if (this.lessonForm.invalid) return;
 
@@ -186,4 +203,12 @@ export class AddLessonsComponent implements OnInit {
       });
     }
   }
-}
+
+  finalizarCurso(): void {
+    if (this.lecciones.length === 0) {
+      const confirmar = confirm('El curso no tiene lecciones aún. ¿Deseas regresar a Cursos de todas formas?');
+      if (!confirmar) return;
+    }
+    this.router.navigate(['/cursos']);
+  }
+}

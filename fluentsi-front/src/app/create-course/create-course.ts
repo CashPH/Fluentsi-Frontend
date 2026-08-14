@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Router, ActivatedRoute } from '@angular/router'; 
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-create-course',
@@ -16,6 +17,7 @@ export class CreateCourseComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
   private route = inject(ActivatedRoute); 
+  private authService = inject(AuthService);
 
   courseForm: FormGroup = this.fb.group({
     titulo: ['', Validators.required],
@@ -60,8 +62,14 @@ export class CreateCourseComponent implements OnInit {
   onSubmit() {
     if (this.courseForm.invalid) return;
 
+    const user = this.authService.getUser();
+    const payload = {
+      ...this.courseForm.value,
+      id_instructor: user?.userId || null
+    };
+
     if (this.isEditMode) {
-      this.http.put(`http://localhost:4000/api/cursos/${this.currentCourseId}`, this.courseForm.value)
+      this.http.put(`http://localhost:4000/api/cursos/${this.currentCourseId}`, payload)
         .subscribe({
           next: (res: any) => {
             alert('¡Curso actualizado exitosamente!');
@@ -73,7 +81,7 @@ export class CreateCourseComponent implements OnInit {
           }
         });
     } else {
-      this.http.post('http://localhost:4000/api/cursos', this.courseForm.value)
+      this.http.post('http://localhost:4000/api/cursos', payload)
         .subscribe({
           next: (res: any) => { 
             alert('¡Curso creado exitosamente! Vamos a agregar sus lecciones.');
@@ -84,6 +92,22 @@ export class CreateCourseComponent implements OnInit {
             console.error(err);
           }
         });
+    }
+  }
+
+  eliminarCurso() {
+    if (!this.currentCourseId) return;
+    if (confirm('¿Estás seguro de que deseas eliminar este curso? Esta acción no se puede deshacer.')) {
+      this.http.delete(`http://localhost:4000/api/cursos/${this.currentCourseId}`).subscribe({
+        next: () => {
+          alert('Curso eliminado exitosamente.');
+          this.router.navigate(['/cursos']);
+        },
+        error: (err) => {
+          console.error('Error al eliminar curso:', err);
+          alert('No se pudo eliminar el curso.');
+        }
+      });
     }
   }
 }

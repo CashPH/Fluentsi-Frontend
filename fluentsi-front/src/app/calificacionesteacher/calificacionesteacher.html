@@ -18,6 +18,14 @@
     </div>
   </nav>
 
+  <!-- TOAST MESSAGES -->
+  <div class="toast-message success-toast" *ngIf="mensajeExito">
+    ✅ {{ mensajeExito }}
+  </div>
+  <div class="toast-message error-toast" *ngIf="mensajeError">
+    ❌ {{ mensajeError }}
+  </div>
+
   <main class="main-body">
     <h1 class="main-title">Subir calificaciones</h1>
 
@@ -139,8 +147,8 @@
           </div>
 
           <div class="action-footer">
-            <button class="btn-subir" (click)="guardarCalificacion()">
-              Subir calificación
+            <button class="btn-subir" (click)="guardarCalificacion()" [disabled]="guardando">
+              {{ guardando ? 'Guardando...' : 'Subir calificación' }}
             </button>
           </div>
 

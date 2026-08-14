@@ -2,13 +2,13 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-course-viewer',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './course-viewer.html',
   styleUrls: ['./course-viewer.css']
 })
@@ -22,7 +22,7 @@ export class CourseViewerComponent implements OnInit {
   idCurso: number | null = null;
   userId: number | null = null;
   idInscripcion: number | null = null;
-  
+
   curso: any = null;
   lecciones: any[] = [];
   leccionSeleccionada: any = null;
@@ -38,6 +38,14 @@ export class CourseViewerComponent implements OnInit {
   guardandoProgreso: boolean = false;
   cursoCompletado: boolean = false;
 
+  // Attempt & Lock states
+  intentosRealizados: number = 0;
+  maxIntentosPermitidos: number = 3;
+  tieneReapertura: boolean = false;
+  quizBloqueadoPorIntentos: boolean = false;
+  mensajeBloqueoQuiz: string = '';
+  feedbackProfesor: string = '';
+
   ngOnInit(): void {
     const user = this.authService.getUser();
     if (user) {
@@ -49,17 +57,13 @@ export class CourseViewerComponent implements OnInit {
       this.idCurso = Number(paramId);
       this.cargarTodo();
     } else {
-      // Fallback si viene a /leccion sin id
       this.http.get<any[]>('http://localhost:4000/api/cursos').subscribe({
-        next: (cursos) => {
-          if (cursos && cursos.length > 0) {
-            this.idCurso = cursos[0].id_curso;
+        next: (data) => {
+          if (data && data.length > 0) {
+            this.idCurso = data[0].id_curso;
             this.cargarTodo();
-          } else {
-            this.cargando = false;
           }
-        },
-        error: () => { this.cargando = false; }
+        }
       });
     }
   }
@@ -68,96 +72,104 @@ export class CourseViewerComponent implements OnInit {
     if (!this.idCurso) return;
     this.cargando = true;
 
-    // 1. Obtener detalles del curso
-    this.http.get(`http://localhost:4000/api/cursos/${this.idCurso}`).subscribe({
-      next: (cursoData: any) => {
-        this.curso = cursoData;
+    this.http.get<any>(`http://localhost:4000/api/cursos/${this.idCurso}`).subscribe({
+      next: (data) => this.curso = data,
+      error: (err) => console.error('Error al cargar curso:', err)
+    });
 
-        // 2. Obtener lecciones
-        this.http.get<any[]>(`http://localhost:4000/api/cursos/${this.idCurso}/lecciones`).subscribe({
-          next: (leccionesData) => {
-            this.lecciones = leccionesData || [];
-
-            // 3. Obtener inscripción del alumno
-            if (this.userId) {
-              this.http.get<any[]>(`http://localhost:4000/api/inscripciones/${this.userId}`).subscribe({
-                next: (inscripciones) => {
-                  const insc = inscripciones.find(i => Number(i.id_curso) === Number(this.idCurso));
-                  if (insc) {
-                    this.idInscripcion = insc.id_inscripcion_curso;
-                    this.porcentajeAvance = Number(insc.porcentaje_avance) || 0;
-                    this.cargarProgreso();
-                  } else {
-                    this.cargando = false;
-                    this.seleccionarPrimeraLeccion();
-                  }
-                },
-                error: () => {
-                  this.cargando = false;
-                  this.seleccionarPrimeraLeccion();
-                }
-              });
-            } else {
-              this.cargando = false;
-              this.seleccionarPrimeraLeccion();
-            }
-          },
-          error: (err) => {
-            console.error('Error al cargar lecciones:', err);
-            this.cargando = false;
+    if (this.userId) {
+      this.http.get<any[]>(`http://localhost:4000/api/inscripciones/${this.userId}`).subscribe({
+        next: (inscripciones) => {
+          const ins = inscripciones.find((i: any) => i.id_curso === this.idCurso);
+          if (ins) {
+            this.idInscripcion = ins.id_inscripcion_curso;
+            this.cargarProgreso();
           }
-        });
+        }
+      });
+    }
+
+    this.http.get<any[]>(`http://localhost:4000/api/cursos/${this.idCurso}/lecciones`).subscribe({
+      next: (data) => {
+        this.lecciones = data || [];
+        if (this.lecciones.length > 0) {
+          this.seleccionarLeccion(this.lecciones[0]);
+        } else {
+          this.cargando = false;
+          this.cdr.detectChanges();
+        }
       },
       error: (err) => {
-        console.error('Error al cargar curso:', err);
+        console.error('Error al cargar lecciones:', err);
         this.cargando = false;
+        this.cdr.detectChanges();
       }
     });
   }
 
   cargarProgreso(): void {
-    if (!this.idInscripcion) {
-      this.cargando = false;
-      this.seleccionarPrimeraLeccion();
-      return;
-    }
+    if (!this.idInscripcion) return;
 
     this.http.get<any>(`http://localhost:4000/api/progreso/${this.idInscripcion}`).subscribe({
       next: (res) => {
-        if (res.success && Array.isArray(res.data)) {
-          this.completadasSet = new Set(res.data.map((item: any) => Number(item.id_leccion)));
+        if (res.success) {
+          this.completadasSet = new Set(res.completadas || []);
+          this.porcentajeAvance = res.porcentaje || 0;
+          this.cdr.detectChanges();
         }
-        this.cargando = false;
-        this.seleccionarPrimeraLeccion();
       },
-      error: (err) => {
-        console.error('Error al cargar progreso:', err);
-        this.cargando = false;
-        this.seleccionarPrimeraLeccion();
-      }
+      error: (err) => console.error('Error al cargar progreso:', err)
     });
-  }
-
-  seleccionarPrimeraLeccion(): void {
-    if (this.lecciones.length > 0) {
-      // Buscar primera no completada o la primera
-      const noCompletada = this.lecciones.find(l => !this.completadasSet.has(Number(l.id_leccion)));
-      this.seleccionarLeccion(noCompletada || this.lecciones[0]);
-    }
-    this.cdr.detectChanges();
   }
 
   seleccionarLeccion(leccion: any): void {
     this.leccionSeleccionada = leccion;
     this.quizEnviado = false;
     this.respuestasAlumno = {};
-    this.preguntasQuiz = [];
     this.puntajeQuiz = 0;
+    this.quizBloqueadoPorIntentos = false;
+    this.mensajeBloqueoQuiz = '';
+    this.feedbackProfesor = '';
 
     if (leccion.tipo_contenido === 'Quiz' && leccion.contenido_html) {
       this.cargarExamen(leccion.contenido_html);
+      this.verificarEstadoIntentos(leccion);
     }
     this.cdr.detectChanges();
+  }
+
+  verificarEstadoIntentos(leccion: any): void {
+    if (!this.userId || !leccion.id_leccion) return;
+
+    const esExamenFinal = (leccion.titulo || '').toLowerCase().includes('examen');
+    this.maxIntentosPermitidos = esExamenFinal ? 1 : 3;
+
+    this.http.get<any>(`http://localhost:4000/api/quiz/intentos/estado?id_estudiante=${this.userId}&id_leccion=${leccion.id_leccion}`).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.intentosRealizados = res.totalIntentos || 0;
+          this.tieneReapertura = !!res.tieneReapertura;
+          this.feedbackProfesor = res.feedbackTexto || '';
+
+          if (esExamenFinal) {
+            if (this.intentosRealizados >= 1 && !this.tieneReapertura) {
+              this.quizBloqueadoPorIntentos = true;
+              this.mensajeBloqueoQuiz = 'Has completado tu único intento permitido para este examen. Si necesitas una oportunidad adicional, solicítasela a tu profesor.';
+            } else if (this.tieneReapertura) {
+              this.quizBloqueadoPorIntentos = false;
+              this.mensajeBloqueoQuiz = '¡Tu profesor ha reabierto este examen! Tienes 1 intento disponible.';
+            }
+          } else {
+            if (this.intentosRealizados >= 3) {
+              this.quizBloqueadoPorIntentos = true;
+              this.mensajeBloqueoQuiz = 'Has alcanzado el límite de 3 intentos para este quiz. Tu profesor revisará tus resultados.';
+            }
+          }
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err) => console.error('Error al verificar intentos:', err)
+    });
   }
 
   cargarExamen(idExamen: any): void {
@@ -171,7 +183,7 @@ export class CourseViewerComponent implements OnInit {
   }
 
   seleccionarOpcion(idPregunta: number, idOpcion: number): void {
-    if (this.quizEnviado) return;
+    if (this.quizEnviado || this.quizBloqueadoPorIntentos || this.leccionSeleccionada?.bloqueada === 1) return;
     this.respuestasAlumno[idPregunta] = idOpcion;
   }
 
@@ -181,6 +193,7 @@ export class CourseViewerComponent implements OnInit {
 
   marcarLeccionCompletada(): void {
     if (!this.idInscripcion || !this.leccionSeleccionada) return;
+    if (this.leccionSeleccionada.bloqueada === 1 && !this.estaCompletada(this.leccionSeleccionada.id_leccion)) return;
     if (this.estaCompletada(this.leccionSeleccionada.id_leccion)) {
       // Ya está completada, avanzar si hay siguiente
       if (this.siguienteLeccionObj) {
@@ -203,7 +216,6 @@ export class CourseViewerComponent implements OnInit {
           this.completadasSet.add(Number(this.leccionSeleccionada.id_leccion));
           this.porcentajeAvance = res.porcentaje;
           this.cdr.detectChanges();
-          // Si hay siguiente lección, avanzar; si no, mostrar pantalla de curso completado
           if (this.siguienteLeccionObj) {
             this.siguienteLeccion();
           } else {
@@ -220,7 +232,7 @@ export class CourseViewerComponent implements OnInit {
   }
 
   enviarQuiz(): void {
-    if (!this.leccionSeleccionada || this.preguntasQuiz.length === 0) return;
+    if (!this.leccionSeleccionada || this.preguntasQuiz.length === 0 || this.quizBloqueadoPorIntentos || this.leccionSeleccionada.bloqueada === 1) return;
 
     let correctas = 0;
     const respuestasFormateadas: any[] = [];
@@ -234,11 +246,14 @@ export class CourseViewerComponent implements OnInit {
         correctas++;
       }
 
+      const opcionCorrecta = preg.opciones?.find((o: any) => o.es_correcta === 1);
+
       respuestasFormateadas.push({
         id_pregunta: preg.id_pregunta,
         pregunta_texto: preg.pregunta_texto,
         id_opcion_seleccionada: opcionId || null,
         opcion_texto_seleccionada: opcionObj ? opcionObj.opcion_texto : 'Sin respuesta',
+        opcion_correcta_texto: opcionCorrecta ? opcionCorrecta.opcion_texto : '',
         es_correcta: esCorrecta
       });
     });
@@ -247,7 +262,6 @@ export class CourseViewerComponent implements OnInit {
     this.quizEnviado = true;
     this.cdr.detectChanges();
 
-    // Guardar el intento de quiz y luego marcar progreso siempre
     if (this.userId && this.idInscripcion) {
       this.http.post('http://localhost:4000/api/quiz/intentos', {
         id_estudiante: this.userId,
@@ -257,15 +271,16 @@ export class CourseViewerComponent implements OnInit {
         respuestas_json: respuestasFormateadas,
         puntaje: this.puntajeQuiz
       }).subscribe({
-        next: () => this.guardarProgresoQuiz(),
-        // Si falla el guardado del intento, igual marcamos el progreso de la lección
+        next: () => {
+          this.verificarEstadoIntentos(this.leccionSeleccionada);
+          this.guardarProgresoQuiz();
+        },
         error: (err) => {
           console.error('Error al guardar intento de quiz:', err);
           this.guardarProgresoQuiz();
         }
       });
     } else {
-      // Sin autenticación, al menos mostrar la pantalla de fin si es la última
       if (!this.siguienteLeccionObj) {
         this.cursoCompletado = true;
         this.cdr.detectChanges();

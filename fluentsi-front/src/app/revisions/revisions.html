@@ -30,19 +30,25 @@
                         <option *ngFor="let nombre of alumnosUnicos" [value]="nombre">{{ nombre }}</option>
                     </select>
 
+                    <select class="filter-select" [(ngModel)]="filtroTipo">
+                        <option value="">Todos (Quiz y Exámenes)</option>
+                        <option value="Examen">🎓 Solo Exámenes</option>
+                        <option value="Quiz">📝 Solo Quizzes</option>
+                    </select>
+
                     <div class="search-input-wrapper">
                         <span class="search-icon">🔍</span>
-                        <input type="text" placeholder="Buscar..." [(ngModel)]="filtroTexto">
+                        <input type="text" placeholder="Buscar por alumno, curso..." [(ngModel)]="filtroTexto">
                     </div>
                 </div>
 
                 <!-- CARGANDO O LISTA VACÍA -->
                 <div *ngIf="cargando" class="loading-box">
-                    <p>Cargando intentos de exámen...</p>
+                    <p>Cargando intentos y evaluaciones...</p>
                 </div>
 
                 <div *ngIf="!cargando && intentosFiltrados.length === 0" class="empty-box">
-                    <p>No se encontraron revisiones pendientes.</p>
+                    <p>No se encontraron revisiones de quizes ni exámenes.</p>
                 </div>
 
                 <!-- LISTA DE INTENTOS -->
@@ -52,20 +58,28 @@
                          [class.selected-card]="revisionSeleccionada?.id_intento === item.id_intento">
                         <img src="/monit.png" alt="Alumno" class="student-img">
                         <div class="card-info">
-                            <h4>{{ item.nombre_alumno }}</h4>
+                            <div class="card-header-row">
+                                <h4>{{ item.nombre_alumno }}</h4>
+                                <span class="tipo-badge" [class.badge-examen]="esExamen(item)" [class.badge-quiz]="!esExamen(item)">
+                                    {{ esExamen(item) ? '🎓 Examen' : '📝 Quiz' }}
+                                </span>
+                            </div>
                             <p class="quiz-info-text">
-                                <strong>{{ item.titulo_curso }}</strong> — {{ item.titulo_examen || item.titulo_leccion }}
+                                <strong>{{ item.titulo_curso }}</strong> — {{ item.titulo_leccion }}
                             </p>
                             <div class="meta-row">
                                 <span class="level-badge">{{ item.nivel_actual || 'A1' }}</span>
                                 <span class="score-badge" [class.passed]="item.puntaje >= 60">
                                     Puntaje: {{ item.puntaje }}%
                                 </span>
-                                <span class="feedback-badge" *ngIf="item.feedback_texto">✓ Con Feedback</span>
+                                <span class="feedback-badge" *ngIf="item.feedback_texto">✓ Con Retroalimentación</span>
+                                <span class="date-label" *ngIf="item.fecha_intento">
+                                    📅 {{ item.fecha_intento | date:'d MMM y, HH:mm' }}
+                                </span>
                             </div>
                         </div>
                         <button class="check-btn" (click)="seleccionarRevision(item)">
-                            {{ revisionSeleccionada?.id_intento === item.id_intento ? 'Cerrar' : 'Check Answers' }}
+                            {{ revisionSeleccionada?.id_intento === item.id_intento ? 'Cerrar' : 'Revisar' }}
                         </button>
                     </div>
                 </div>
@@ -74,34 +88,95 @@
 
             <!-- FEEDBACK PANEL -->
             <div class="feedback-panel" *ngIf="revisionSeleccionada">
-                <h3>Revisión de {{ revisionSeleccionada.nombre_alumno }}</h3>
-                <p class="subtitle">{{ revisionSeleccionada.titulo_examen }} ({{ revisionSeleccionada.puntaje }}%)</p>
+                <div class="panel-header">
+                    <span class="tipo-badge-large" [class.badge-examen]="esExamen(revisionSeleccionada)" [class.badge-quiz]="!esExamen(revisionSeleccionada)">
+                        {{ esExamen(revisionSeleccionada) ? '🎓 Examen Final' : '📝 Quiz de Lección' }}
+                    </span>
+                    <h3>Revisión de {{ revisionSeleccionada.nombre_alumno }}</h3>
+                    <p class="subtitle">{{ revisionSeleccionada.titulo_curso }} — {{ revisionSeleccionada.titulo_leccion }}</p>
+                    <p class="attempt-date" *ngIf="revisionSeleccionada.fecha_intento">
+                        📅 Enviado: {{ revisionSeleccionada.fecha_intento | date:'EEEE d \'de\' MMMM y, HH:mm' }}
+                    </p>
+                    <div class="score-banner" [class.score-pass]="revisionSeleccionada.puntaje >= 60">
+                        Puntaje obtenido: <strong>{{ revisionSeleccionada.puntaje }}%</strong>
+                        ({{ revisionSeleccionada.puntaje >= 60 ? '✅ Aprobado' : '⚠️ Requiere revisión / Refuerzo' }})
+                    </div>
+                </div>
 
-                <!-- PREGUNTAS Y RESPUESTAS REALES -->
+                <!-- PREGUNTAS Y RESPUESTAS -->
                 <div class="responses-container">
+                    <h4 class="responses-title">Respuestas del alumno:</h4>
+
+                    <div *ngIf="respuestasParsed.length === 0" class="no-responses">
+                        <p>No hay respuestas guardadas para este intento.</p>
+                    </div>
+
                     <div class="question-response-box" *ngFor="let resp of respuestasParsed; let i = index">
-                        <label class="q-label">Pregunta {{ i + 1 }}: {{ resp.pregunta_texto }}</label>
+                        <label class="q-label">{{ i + 1 }}. {{ resp.pregunta_texto }}</label>
+
+                        <!-- Respuesta del alumno -->
                         <div class="answer-box" [class.answer-correct]="resp.es_correcta" [class.answer-wrong]="!resp.es_correcta">
                             <span class="status-icon">{{ resp.es_correcta ? '✓' : '✗' }}</span>
-                            <span>{{ resp.opcion_texto_seleccionada }}</span>
+                            <div class="answer-content">
+                                <span class="answer-label">Alumno respondió:</span>
+                                <span class="answer-text">{{ resp.opcion_texto_seleccionada }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Respuesta correcta (solo si el alumno se equivocó) -->
+                        <div class="correct-answer-box" *ngIf="!resp.es_correcta && resp.opcion_correcta_texto">
+                            <span class="correct-icon">💡</span>
+                            <div class="answer-content">
+                                <span class="answer-label">Respuesta correcta:</span>
+                                <span class="answer-text">{{ resp.opcion_correcta_texto }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- SCORE BREAKDOWN -->
+                <div class="score-breakdown" *ngIf="respuestasParsed.length > 0">
+                    <span class="breakdown-item correct-count">
+                        ✅ {{ totalCorrectas }} / {{ respuestasParsed.length }} correctas
+                    </span>
+                    <span class="breakdown-item wrong-count">
+                        ❌ {{ respuestasParsed.length - totalCorrectas }} incorrectas
+                    </span>
+                </div>
+
                 <!-- RETROALIMENTACION -->
                 <div class="feedback-group">
-                    <label>Caja de Feedback para el alumno</label>
+                    <label>💬 Retroalimentación para {{ revisionSeleccionada.nombre_alumno }}</label>
+                    <p class="feedback-hint">El alumno verá este mensaje la próxima vez que abra el quiz.</p>
                     <textarea class="feedback-input" 
                               rows="4" 
-                              placeholder="Escribe tu retroalimentación para el alumno..." 
+                              placeholder="Escribe aquí tus comentarios, sugerencias o áreas de mejora para el alumno..." 
                               [(ngModel)]="feedbackTexto"></textarea>
                 </div>
 
                 <button class="send-btn" 
                         (click)="enviarRetroalimentacion()"
-                        [disabled]="enviandoFeedback">
-                    {{ enviandoFeedback ? 'Enviando...' : 'Enviar Retroalimentación' }}
+                        [disabled]="enviandoFeedback || !feedbackTexto.trim()">
+                    {{ enviandoFeedback ? '⏳ Enviando...' : '✉️ Enviar Retroalimentación al Alumno' }}
                 </button>
+
+                <!-- BOTÓN REABRIR EXAMEN -->
+                <div class="reopen-section" *ngIf="esExamen(revisionSeleccionada)">
+                    <p class="reopen-desc">Los exámenes tienen un límite estricto de 1 intento. Si deseas permitir que este alumno repita la evaluación, puedes reabrir el examen:</p>
+                    <button class="reopen-btn"
+                            (click)="reabrirExamen()"
+                            [disabled]="reabriendoExamen">
+                        {{ reabriendoExamen ? '⏳ Reabriendo...' : '🔓 Reabrir Examen para el Alumno' }}
+                    </button>
+                </div>
+
+                <div class="reopen-section quiz-reopen" *ngIf="!esExamen(revisionSeleccionada)">
+                    <button class="reopen-btn secondary"
+                            (click)="reabrirExamen()"
+                            [disabled]="reabriendoExamen">
+                        {{ reabriendoExamen ? '⏳ Reabriendo...' : '🔓 Permitir Intento Adicional de Quiz' }}
+                    </button>
+                </div>
 
             </div>
 

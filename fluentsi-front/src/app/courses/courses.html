@@ -57,11 +57,15 @@
                     <div class="card-body">
                         <span class="level-badge">{{ displayNivel(curso) }}</span>
                         <h4>{{ curso.titulo }}</h4>
+                        <p class="course-author" style="font-size: 0.85rem; color: #64748b; margin: 0.3rem 0 0.5rem 0;">👨‍🏫 {{ curso.autor || 'Profesor' }}</p>
                         <div class="course-stats">
                             <span>📄 Lecciones</span>
                             <span>🕒 {{ curso.es_gratuito ? 'Gratis' : '$' + curso.precio }}</span>
                         </div>
-                        <a class="start-link" *ngIf="!isStudent">Gestionar Curso ⚙️</a>
+                        <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: space-between; margin-top: 0.5rem;" *ngIf="!isStudent">
+                            <a class="start-link" style="margin: 0;">Gestionar ⚙️</a>
+                            <button (click)="eliminarCurso(curso.id_curso, $event)" title="Borrar Curso" style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.85rem; cursor: pointer; font-weight: bold;">Borrar 🗑️</button>
+                        </div>
                         <a class="start-link" *ngIf="isStudent && estaInscrito(curso.id_curso)">Acceder al contenido 📖</a>
                         <a class="start-link" *ngIf="isStudent && !estaInscrito(curso.id_curso)">Inscribirse 🚀</a>
                     </div>

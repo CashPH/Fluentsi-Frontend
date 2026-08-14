@@ -154,7 +154,7 @@ router.post(
 
     const { correo, password } = req.body;
     try {
-      const [rows]: any = await pool.query('SELECT id_instructor, password, nombre FROM instructores WHERE correo = ?', [correo]);
+      const [rows]: any = await pool.query('SELECT id_instructor, password, nombre, ap_paterno FROM instructores WHERE correo = ?', [correo]);
       if (!rows.length) {
 
         const [studentRows]: any = await pool.query('SELECT id_estudiante FROM estudiantes WHERE correo = ?', [correo]);
@@ -168,8 +168,8 @@ router.post(
       const match = await bcrypt.compare(password, user.password);
       if (!match) return res.status(400).json({ message: 'Credenciales inválidas' });
 
-      const token = jwt.sign({ id: user.id_instructor, correo, role: 'teacher', nombre: user.nombre }, process.env.JWT_SECRET || 'secret', { expiresIn: '2h' });
-      res.json({ token, userId: user.id_instructor, role: 'teacher', nombre: user.nombre });
+      const token = jwt.sign({ id: user.id_instructor, correo, role: 'teacher', nombre: user.nombre, ap_paterno: user.ap_paterno }, process.env.JWT_SECRET || 'secret', { expiresIn: '2h' });
+      res.json({ token, userId: user.id_instructor, role: 'teacher', nombre: user.nombre, ap_paterno: user.ap_paterno });
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: 'Error del servidor' });

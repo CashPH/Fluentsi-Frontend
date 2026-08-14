@@ -17,10 +17,13 @@
             </div>
 
             <ul class="lesson-list">
-                <li *ngFor="let item of lecciones" 
-                    [class.active]="leccionSeleccionada?.id_leccion === item.id_leccion"
+                <li *ngFor="let item of lecciones" [class.active]="leccionSeleccionada?.id_leccion === item.id_leccion"
+                    [class.locked-lesson]="item.bloqueada === 1 && !estaCompletada(item.id_leccion)"
                     (click)="seleccionarLeccion(item)">
-                    <span class="icon">{{ item.tipo_contenido === 'Quiz' ? '❓' : '📄' }}</span>
+                    <span class="icon">
+                        {{ item.bloqueada === 1 && !estaCompletada(item.id_leccion) ? '🔒' : (item.tipo_contenido ===
+                        'Quiz' ? '❓' : '📄') }}
+                    </span>
                     <span class="lesson-title">{{ item.titulo }}</span>
                     <div class="status-circle" [class.completed]="estaCompletada(item.id_leccion)">
                         <span *ngIf="estaCompletada(item.id_leccion)">✓</span>
@@ -54,41 +57,58 @@
                 <div class="completado-progress">
                     <div class="completado-progress-fill"></div>
                 </div>
-                <p class="completado-subtitle">Terminaste todas las lecciones con un avance del <strong>{{ porcentajeAvance }}%</strong></p>
+                <p class="completado-subtitle">Terminaste todas las lecciones con un avance del <strong>{{
+                        porcentajeAvance }}%</strong></p>
                 <div class="completado-actions">
                     <button class="btn-volver-catalogo" (click)="volverAIndex()">
                         ← Explorar más cursos
                     </button>
-                    <button class="btn-revisar-curso" (click)="cursoCompletado = false; seleccionarPrimeraLeccion()">
+                    <button class="btn-revisar-curso" (click)="cursoCompletado = false; seleccionarLeccion(lecciones[0])">
                         📖 Revisar el curso
                     </button>
                 </div>
             </div>
 
+            <!-- MENSAJE DE BLOQUEO / LÍMITE DE INTENTOS -->
+            <div *ngIf="!cargando && !cursoCompletado && leccionSeleccionada && mensajeBloqueoQuiz && (leccionSeleccionada.bloqueada === 1 || quizBloqueadoPorIntentos)"
+                class="bloqueo-aviso">
+                <div class="bloqueo-icon">{{ leccionSeleccionada.bloqueada === 1 ? '🔒' : '⛔' }}</div>
+                <h3 *ngIf="leccionSeleccionada.bloqueada === 1">Lección Bloqueada</h3>
+                <h3 *ngIf="quizBloqueadoPorIntentos">Límite de Intentos Alcanzado</h3>
+                <p>{{ mensajeBloqueoQuiz }}</p>
+                <div *ngIf="!quizBloqueadoPorIntentos && intentosRealizados > 0 && maxIntentosPermitidos > 1"
+                    class="intentos-info">
+                    Intentos realizados: <strong>{{ intentosRealizados }}/{{ maxIntentosPermitidos }}</strong>
+                </div>
+            </div>
+
             <!-- CONTENIDO DE LECTURA / GENERAL -->
-            <div *ngIf="!cargando && !cursoCompletado && leccionSeleccionada && leccionSeleccionada.tipo_contenido !== 'Quiz'" class="lesson-body">
+            <div *ngIf="!cargando && !cursoCompletado && leccionSeleccionada && leccionSeleccionada.tipo_contenido !== 'Quiz' && !(leccionSeleccionada.bloqueada === 1 && !estaCompletada(leccionSeleccionada.id_leccion))"
+                class="lesson-body">
                 <h2>{{ leccionSeleccionada.titulo }}</h2>
-                <div class="html-content" [innerHTML]="leccionSeleccionada.contenido_html || '<p>Sin contenido adicional.</p>'"></div>
+                <div class="html-content"
+                    [innerHTML]="leccionSeleccionada.contenido_html || '<p>Sin contenido adicional.</p>'"></div>
 
                 <div class="action-footer">
-                    <button class="complete-btn" 
-                            (click)="marcarLeccionCompletada()" 
-                            [disabled]="guardandoProgreso">
-                        {{ estaCompletada(leccionSeleccionada.id_leccion) ? '✓ Lección Completada' : 'Marcar como Completada' }}
+                    <button class="complete-btn" (click)="marcarLeccionCompletada()" [disabled]="guardandoProgreso">
+                        {{ estaCompletada(leccionSeleccionada.id_leccion) ? '✓ Lección Completada' : 'Marcar como
+                        Completada' }}
                     </button>
 
                     <!-- SIGUIENTE LECCIÓN PREVIEW -->
                     <div *ngIf="siguienteLeccionObj" class="siguiente-leccion-preview" (click)="siguienteLeccion()">
                         <span class="siguiente-label">Siguiente lección</span>
                         <div class="siguiente-info">
-                            <span class="siguiente-icon">{{ siguienteLeccionObj.tipo_contenido === 'Quiz' ? '❓' : '📄' }}</span>
+                            <span class="siguiente-icon">{{ siguienteLeccionObj.tipo_contenido === 'Quiz' ? '❓' : '📄'
+                                }}</span>
                             <span class="siguiente-titulo">{{ siguienteLeccionObj.titulo }}</span>
                             <span class="siguiente-arrow">→</span>
                         </div>
                     </div>
 
                     <!-- ÚLTIMA LECCIÓN: botón para finalizar curso -->
-                    <div *ngIf="!siguienteLeccionObj && estaCompletada(leccionSeleccionada.id_leccion)" class="fin-curso-preview" (click)="volverAIndex()">
+                    <div *ngIf="!siguienteLeccionObj && estaCompletada(leccionSeleccionada.id_leccion)"
+                        class="fin-curso-preview" (click)="volverAIndex()">
                         <span class="siguiente-label">¿Listo para más?</span>
                         <div class="siguiente-info">
                             <span class="siguiente-icon">🎯</span>
@@ -100,10 +120,35 @@
             </div>
 
             <!-- CONTENIDO DE QUIZ -->
-            <div *ngIf="!cargando && !cursoCompletado && leccionSeleccionada && leccionSeleccionada.tipo_contenido === 'Quiz'" class="quiz-viewer-body">
+            <div *ngIf="!cargando && !cursoCompletado && leccionSeleccionada && leccionSeleccionada.tipo_contenido === 'Quiz' && !(leccionSeleccionada.bloqueada === 1 && !estaCompletada(leccionSeleccionada.id_leccion)) && !quizBloqueadoPorIntentos"
+                class="quiz-viewer-body">
+                
+                <!-- BANNER DE RETROALIMENTACIÓN DEL PROFESOR -->
+                <div class="teacher-feedback-banner" *ngIf="feedbackProfesor" style="background-color: #fef9c3; border: 2px solid #f59e0b; padding: 1rem 1.2rem; border-radius: 16px; margin-bottom: 1.5rem; color: #854d0e;">
+                    <h4 style="margin-bottom: 0.3rem; font-weight: bold; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        💬 Retroalimentación de tu profesor:
+                    </h4>
+                    <p style="font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap; margin: 0;">{{ feedbackProfesor }}</p>
+                </div>
+
                 <div class="quiz-header">
                     <h2>{{ leccionSeleccionada.titulo }}</h2>
                     <p class="quiz-instruction">Responde las siguientes preguntas para continuar:</p>
+
+                    <!-- BADGE DE INTENTOS -->
+                    <div class="intentos-badge" *ngIf="userId">
+                        <span class="intentos-contador">
+                            Intento {{ intentosRealizados + (quizEnviado ? 0 : 1) }} de {{ maxIntentosPermitidos }}
+                        </span>
+                        <span class="intentos-restantes" *ngIf="!quizEnviado">
+                            {{ maxIntentosPermitidos - intentosRealizados - 1 }} restantes después de este
+                        </span>
+                    </div>
+
+                    <!-- AVISO DE REAPERTURA -->
+                    <div class="reopen-notice" *ngIf="tieneReapertura && intentosRealizados > 0">
+                        ✅ Tu profesor ha reabierto este examen para ti. Tienes 1 intento adicional disponible.
+                    </div>
                 </div>
 
                 <div *ngIf="preguntasQuiz.length === 0" class="no-questions">
@@ -115,17 +160,14 @@
                         <h3 class="question-title">{{ i + 1 }}. {{ preg.pregunta_texto }}</h3>
 
                         <div class="options-group">
-                            <label class="option-item" 
-                                   *ngFor="let op of preg.opciones"
-                                   [class.selected]="respuestasAlumno[preg.id_pregunta] === op.id_opcion"
-                                   [class.correct-option]="quizEnviado && op.es_correcta === 1"
-                                   [class.wrong-option]="quizEnviado && respuestasAlumno[preg.id_pregunta] === op.id_opcion && op.es_correcta === 0">
-                                <input type="radio" 
-                                       [name]="'preg_' + preg.id_pregunta" 
-                                       [value]="op.id_opcion"
-                                       [checked]="respuestasAlumno[preg.id_pregunta] === op.id_opcion"
-                                       [disabled]="quizEnviado"
-                                       (change)="seleccionarOpcion(preg.id_pregunta, op.id_opcion)">
+                            <label class="option-item" *ngFor="let op of preg.opciones"
+                                [class.selected]="respuestasAlumno[preg.id_pregunta] === op.id_opcion"
+                                [class.correct-option]="quizEnviado && op.es_correcta === 1"
+                                [class.wrong-option]="quizEnviado && respuestasAlumno[preg.id_pregunta] === op.id_opcion && op.es_correcta === 0">
+                                <input type="radio" [name]="'preg_' + preg.id_pregunta" [value]="op.id_opcion"
+                                    [checked]="respuestasAlumno[preg.id_pregunta] === op.id_opcion"
+                                    [disabled]="quizEnviado"
+                                    (change)="seleccionarOpcion(preg.id_pregunta, op.id_opcion)">
                                 <span>{{ op.opcion_texto }}</span>
                             </label>
                         </div>
@@ -138,10 +180,12 @@
                         <p *ngIf="puntajeQuiz < 60">Tu intento ha sido enviado para revisión del profesor.</p>
 
                         <!-- SIGUIENTE LECCIÓN DESPUÉS DEL QUIZ -->
-                        <div *ngIf="siguienteLeccionObj" class="siguiente-leccion-preview quiz-siguiente" (click)="siguienteLeccion()">
+                        <div *ngIf="siguienteLeccionObj" class="siguiente-leccion-preview quiz-siguiente"
+                            (click)="siguienteLeccion()">
                             <span class="siguiente-label">Siguiente lección</span>
                             <div class="siguiente-info">
-                                <span class="siguiente-icon">{{ siguienteLeccionObj.tipo_contenido === 'Quiz' ? '❓' : '📄' }}</span>
+                                <span class="siguiente-icon">{{ siguienteLeccionObj.tipo_contenido === 'Quiz' ? '❓' :
+                                    '📄' }}</span>
                                 <span class="siguiente-titulo">{{ siguienteLeccionObj.titulo }}</span>
                                 <span class="siguiente-arrow">→</span>
                             </div>

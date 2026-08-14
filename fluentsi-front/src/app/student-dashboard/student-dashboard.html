@@ -4,8 +4,8 @@
         <div class="nav-left">
             <img src="/logo.png" alt="Logo" class="logo">
             <ul class="nav-links">
-                <li><a href="javascript:void(0)" class="active">Inicio</a></li>
-                <li><a href="javascript:void(0)" (click)="goToCursosStudent()">Cursos</a></li>
+                <li><a routerLink="/student-dashboard" class="active">Inicio</a></li>
+                <li><a routerLink="/cursos-student">Cursos</a></li>
             </ul>
         </div>
         <div class="nav-right">
@@ -56,8 +56,7 @@
                     </div>
 
                     <div *ngIf="!cargando && cursosActivos.length === 0" class="empty-courses">
-                        Aún no estás inscrito en ningún curso. ¡Explora los cursos disponibles a la derecha para
-                        comenzar!
+                        Aún no estás inscrito en ningún curso. ¡Explora los cursos disponibles a la derecha para comenzar!
                     </div>
 
                     <div class="course-progress-card" *ngFor="let c of cursosActivos">
@@ -66,6 +65,7 @@
                             <div class="course-meta">
                                 <span>📖 Idioma: {{ c.id_idioma === 2 ? 'Francés' : 'Inglés' }}</span>
                                 <span class="lvl">{{ displayNivel(c.nivel_recomendado) }}</span>
+                                <span style="font-size: 0.85rem; color: #475569;">👨‍🏫 {{ c.autor || 'Profesor' }}</span>
                             </div>
                         </div>
                         <div class="progress-container">
@@ -77,6 +77,48 @@
                         <a href="javascript:void(0)" class="continue-link" (click)="goToCursoViewer(c.id_curso)">
                             Continuar Curso →
                         </a>
+                    </div>
+                </div>
+
+                <!-- CALIFICACIONES DE DESEMPEÑO -->
+                <div class="my-courses-list" *ngIf="calificacionesDesempenio.length > 0">
+                    <h2 class="section-title">📋 Calificaciones de Desempeño</h2>
+
+                    <div class="calificaciones-grid">
+                        <div class="calificacion-card" *ngFor="let cal of calificacionesDesempenio">
+                            <div class="calificacion-header">
+                                <h4>{{ cal.nombre_instructor || 'Tu Profesor' }}</h4>
+                                <span class="fecha-calificacion">{{ cal.fecha_calificacion | date: 'd MMM y' }}</span>
+                            </div>
+
+                            <div class="evaluaciones-display">
+                                <div class="eval-display-item">
+                                    <span class="eval-label">Cursos</span>
+                                    <div class="eval-badge" [ngClass]="getColorClass(cal.evaluacion_cursos)">
+                                        {{ getEmoji(cal.evaluacion_cursos) }}
+                                    </div>
+                                </div>
+
+                                <div class="eval-display-item">
+                                    <span class="eval-label">Exámenes</span>
+                                    <div class="eval-badge" [ngClass]="getColorClass(cal.evaluacion_examenes)">
+                                        {{ getEmoji(cal.evaluacion_examenes) }}
+                                    </div>
+                                </div>
+
+                                <div class="eval-display-item">
+                                    <span class="eval-label">Desempeño General</span>
+                                    <div class="eval-badge" [ngClass]="getColorClass(cal.evaluacion_general)">
+                                        {{ getEmoji(cal.evaluacion_general) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="comentarios-display" *ngIf="cal.comentarios">
+                                <p class="comentarios-label">Comentarios del profesor:</p>
+                                <p class="comentarios-text">{{ cal.comentarios }}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -101,6 +143,7 @@
                         </div>
                         <div class="mini-body">
                             <h4>{{ d.titulo }}</h4>
+                            <p style="font-size: 0.8rem; color: #64748b; margin: 0.1rem 0;">👨‍🏫 {{ d.autor || 'Profesor' }}</p>
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
                                 <span class="lvl-tag">{{ displayNivel(d.nivel_recomendado) }}</span>
                                 <span class="precio-badge" *ngIf="d.es_gratuito === 1">Gratis</span>

@@ -32,8 +32,11 @@
 
                     <ul class="lesson-list">
                         <li *ngFor="let item of lecciones" [class.active]="leccionEnEdicionId === item.id_leccion">
-                            <span class="lesson-title">{{ item.orden }}. {{ item.titulo }}</span>
+                            <span class="lesson-title">{{ item.orden }}. {{ item.titulo }} {{ item.bloqueada === 1 ? '🔒' : '' }}</span>
                             <div class="action-icons">
+                                <button type="button" class="icon-btn lock" (click)="toggleBloqueoLeccion(item)" [title]="item.bloqueada === 1 ? 'Liberar Lección' : 'Bloquear Lección'">
+                                    {{ item.bloqueada === 1 ? '🔒' : '🔓' }}
+                                </button>
                                 <button type="button" class="icon-btn edit" (click)="editarLeccion(item)" title="Editar">⚙️</button>
                                 <button type="button" class="icon-btn delete" (click)="eliminarLeccionDelTemario(item.id_leccion)" title="Eliminar">🗑️</button>
                             </div>
@@ -130,5 +133,20 @@
             </section>
 
         </div>
+
+        <!-- BANNER DE FINALIZAR CURSO -->
+        <div class="finalize-course-banner">
+            <div class="finalize-banner-text">
+                <span class="finalize-icon">🎓</span>
+                <div>
+                    <strong>¿Ya terminaste de editar el curso?</strong>
+                    <p>Tienes <strong>{{ lecciones.length }}</strong> {{ lecciones.length === 1 ? 'lección guardada' : 'lecciones guardadas' }}. Cuando hayas terminado, haz clic en el botón para volver a la página de Cursos.</p>
+                </div>
+            </div>
+            <button class="finalize-btn" (click)="finalizarCurso()">
+                ✅ Guardar y Finalizar Curso
+            </button>
+        </div>
+
     </main>
 </div>
